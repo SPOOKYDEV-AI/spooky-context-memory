@@ -12,7 +12,12 @@ export type MemoryNodeType =
   | "hypothesis"
   | "episode"
   | "capsule"
-  | "pattern";
+  | "pattern"
+  | "context"
+  | "transition"
+  | "situation"
+  | "accumulator"
+  | "reconstruction";
 
 export type MemoryNodeStatus =
   | "active"
@@ -31,7 +36,14 @@ export type MemoryLinkType =
   | "instance_of"
   | "extends"
   | "narrows"
-  | "duplicates";
+  | "duplicates"
+  | "flows_to"
+  | "protects"
+  | "compacted_into"
+  | "reactivated_by"
+  | "belongs_to_situation"
+  | "accumulated_into"
+  | "reconstructed_from";
 
 export type SourceType =
   | "user"
@@ -39,7 +51,8 @@ export type SourceType =
   | "tool"
   | "test"
   | "agent"
-  | "documentation";
+  | "documentation"
+  | "conversation";
 
 export interface MemoryScope {
   userId?: string;

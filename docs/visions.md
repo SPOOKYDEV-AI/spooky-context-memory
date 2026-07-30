@@ -57,3 +57,9 @@ A Vision is keyed by task-signature hash and memory revision. It must be invalid
 ## Privacy
 
 This public project provides only generic Vision contracts and synthetic examples. Real project Visions belong to a private runtime store.
+
+## Incremental updates from context flow
+
+A context shift should not force a full Vision rebuild. `updateMemoryVision` reevaluates only caller-supplied affected branches, preserves unaffected frontiers and exclusions, and adds high-activation context frames as anchors.
+
+The caller remains responsible for identifying affected branches. The public engine never infers authorization from semantic similarity alone.

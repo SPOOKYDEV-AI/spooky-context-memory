@@ -1,0 +1,16 @@
+{
+  "scenario": "progressive-context-shift",
+  "initialContext": {
+    "topic": "design persistent memory",
+    "mustPreserve": ["initial need", "forbidden effects"]
+  },
+  "introducedContext": {
+    "topic": "prepare release documentation",
+    "explicitShift": true
+  },
+  "expected": {
+    "oldContextImmediatelyDeleted": false,
+    "oldContextRemainsReactivatable": true,
+    "transitionPathStored": true
+  }
+}

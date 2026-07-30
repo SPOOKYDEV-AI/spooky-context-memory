@@ -2,116 +2,137 @@
 
 ## Design objective
 
-Spooky Context Memory is designed to reuse past experience without allowing old context to dominate a new task.
+Spooky Context Memory reuses past experience without allowing old context to dominate a new task or disappear before its useful value has been transferred.
 
-The engine separates eight responsibilities:
+The complete pipeline is:
 
 ```text
-Capture
-→ Episode analysis
-→ Contrast and causal claims
-→ Admission
+Conversation stream
+→ Context Dynamics
+→ Situation and Context Contract
+→ Episode and contrast analysis
+→ Capsule accumulation and admission
 → Capsule and pattern memory
-→ Vision resolution
+→ Context release
+→ Vision resolution and incremental updates
 → Heuristic retrieval
+→ Selective reconstruction
 → Preventive preflight
 ```
 
-## 1. Capture and episodes
+## 1. Context Dynamics
 
-An `InteractionEpisode` groups attempts that answer the same user need. Each attempt contains the interpretation, actions, result fingerprint, technical evidence, and user verdict.
+The conversation is represented as a `ContextField`, not one global `currentContext`.
 
-The user verdict answers only whether the produced result matched the desired outcome.
+Each `ContextFrame` contains:
 
-## 2. Contrastive analysis
+- topic and intent;
+- scope;
+- activation and relevance;
+- inertia;
+- activation state;
+- retention state;
+- context parents and source turns;
+- protected reasons.
 
-Rejected and accepted attempts are compared deterministically. Differences are recorded as candidate discriminators. Stable relationships, such as two accepted numeric dimensions becoming equal after rejected attempts were unequal, can be surfaced as supported relational discriminators.
+A context can be dominant, overlapping, background, or dormant. A new explicit topic shift boosts a new frame while older frames decay progressively according to inertia. Pinned frames retain a minimum active trace.
 
-Contrast does not prove causality by itself.
+## 2. Context transitions
 
-## 3. Claims
+`ContextTransition` records how the discussion moved from one context to another. The transition path supports questions such as “How did we arrive here?” without replaying the full transcript.
 
-Technical explanations are stored as claims:
+Supported triggers include continuation, explicit topic change, association, clarification, digression, return to previous context, and new event.
 
-- observation;
-- outcome fit;
-- hypothesis;
-- root cause;
-- resolution;
-- applicability;
-- contextual user preference.
+## 3. Situational Memory
 
-Claims can be unverified, supported, verified, disputed, refuted, or stale. Independent evidence groups are counted once to avoid false confidence from duplicated test output.
+A `Situation` groups context frames and transitions serving one coherent objective. It moves through exploration, convergence, implementation, validation, and closed phases.
 
-## 4. Admission
+Its `ContextContract` preserves:
 
-The admission gate decides whether an episode should:
+- initial need;
+- current goal;
+- invariants;
+- discriminating properties;
+- forbidden effects;
+- acceptance criteria;
+- accepted decisions;
+- rejected trajectories;
+- unresolved questions.
 
-- create a candidate capsule;
-- extend an existing pattern;
-- remain a raw trace;
-- request more evidence;
-- be rejected as memory.
+A `PhaseHandoff` records which frames remain active, compacted, or dormant. Context quantity can decrease while task fidelity remains constant.
 
-This prevents transient errors and unisolated changes from flooding active memory.
+## 4. Capsule accumulation
 
-## 5. Capsules and patterns
+A `CapsuleAccumulator` collects reusable information while the situation is unfolding. It computes completeness, stability, and reusable value.
 
-An experience capsule preserves one concrete episode and its scope.
+The accumulator may become ready but never automatically creates active knowledge. Admission, evidence, user validation, and capsule lifecycle controls still apply.
 
-A pattern captures a recurring causal mechanism across multiple capsules. Patterns do not contain a universal technical fix. They contain warning signals, likely consequences, invariants, checks, and prohibited shortcuts.
+## 5. Context release
 
-Independent projects, workflows, and environments increase pattern support. Duplicate episodes in the same context do not count as fully independent evidence.
+The `ContextReleaseGate` separates release from deletion.
 
-## 6. Visions
-
-A Vision is an ephemeral or cached search plan generated from the current task signature and memory revision.
-
-It contains:
-
-- anchor branches;
-- allowed branches;
-- deterministic exclusions;
-- deferred frontiers;
-- likely pattern identifiers;
-- traversal limits.
-
-A Vision is resolved before graph routing. It does not store private business data in the public library.
-
-## 7. Heuristic routing
-
-The router uses an A*-style priority queue. The route cost combines:
-
-- edge cost;
-- scope uncertainty;
-- low relevance;
-- contamination risk;
-- contradiction risk;
-- weak evidence;
-- unknown applicability conditions.
-
-Hard exclusions are evaluated before the heuristic. A forbidden branch is ineligible rather than merely low-scoring.
-
-The frontier can be cached so deferred paths are not forgotten and the graph does not need to be recalculated from zero after every failed hypothesis.
-
-## 8. Belief updates
-
-Hypothesis probabilities can be updated as evidence is encountered. Evidence sharing the same independence key is collapsed to the strongest item before the update. This avoids treating repeated output from one run as several independent proofs.
-
-## 9. Memory Preflight
-
-The final context compiler does not inject complete capsules. It emits a compact preventive contract:
+Possible retention states are:
 
 ```text
-Must preserve
-Known failure modes
-Pruned approaches
-Verify before acting
-Unresolved unknowns
+pinned
+→ active
+→ background
+→ compacted
+→ dormant
+→ archived
+→ eligible_for_deletion
 ```
 
-This is the only part intended for direct injection into an agent prompt by default.
+Release requires proof that need, constraints, decisions, provenance, uncertainty, and useful failed trajectories have been transferred. Active dependencies or pinned status block release.
 
-## 10. Storage boundary
+## 6. Episodes and contrast
 
-Persistence is intentionally postponed until the episode, claim, pattern, and Vision contracts stabilize. Future adapters should keep an append-only lifecycle and separate public engine code from private runtime data.
+An `InteractionEpisode` groups attempts answering the same user need. Rejected and accepted results are compared deterministically. Differences become candidate discriminating properties, not automatic causal truths.
+
+## 7. Claims and admission
+
+Technical explanations are stored as evidence-aware claims. The admission gate chooses between candidate capsule, pattern extension, raw trace, more evidence, or rejection.
+
+## 8. Capsules and patterns
+
+Capsules preserve concrete scoped episodes. Patterns preserve recurring causal mechanisms across independent contexts. Pattern support counts independent projects, workflows, and environments rather than duplicated output.
+
+## 9. Visions
+
+A Vision is a contextual search plan containing anchors, allowed branches, deterministic exclusions, deferred frontiers, likely patterns, and traversal budgets.
+
+`updateMemoryVision` reevaluates only affected branches while preserving unaffected routing work. Context frame identifiers can become anchors without rescoring every branch.
+
+## 10. Heuristic routing
+
+The A*-style router explores only the Vision-approved subgraph. Hard exclusions execute before heuristic scoring. Deferred frontiers can be cached.
+
+## 11. Selective reconstruction
+
+A persistent capsule is stored evidence. A remembered context is a new reconstruction for the present task.
+
+The reconstructor combines:
+
+- current task constraints;
+- relevant context frames;
+- applicable active capsules;
+- supported patterns;
+- transition paths;
+- unresolved applicability conditions.
+
+The output is bounded and excludes raw transcript by default.
+
+## 12. Context efficiency
+
+Performance is measured by more than token reduction. Phase metrics include:
+
+- fidelity to preserved invariants;
+- information density;
+- compaction ratio;
+- phase intensity.
+
+The goal is stable task fidelity with progressively denser context.
+
+## 13. Storage boundary
+
+Persistent adapters remain a later milestone. Public code contains algorithms and synthetic fixtures only. Real contexts, transitions, situations, accumulators, capsules, patterns, and Visions belong in private runtime storage.
