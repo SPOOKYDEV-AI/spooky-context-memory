@@ -1,6 +1,6 @@
 {
   "name": "@spooky-ai/context-memory",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scope-aware experiential memory, pattern recognition, Visions, and preventive retrieval for reliable AI agents.",
   "type": "module",
   "main": "./dist/index.js",
