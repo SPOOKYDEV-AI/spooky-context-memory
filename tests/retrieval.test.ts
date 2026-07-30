@@ -37,9 +37,9 @@ describe("retrieveContext", () => {
   it("keeps retrieval inside the allowed project branch", () => {
     const store = new InMemoryMemoryStore();
 
-    store.addNode(node("asr", null, "/projects/asr", "asr"));
+    store.addNode(node("atlas", null, "/projects/atlas", "atlas"));
     store.addNode(
-      node("asr-incident", "asr", "/projects/asr/incidents", "asr"),
+      node("atlas-incident", "atlas", "/projects/atlas/incidents", "atlas"),
     );
     store.addNode(node("vinted", null, "/projects/vinted", "vinted"));
     store.addNode(
@@ -52,12 +52,12 @@ describe("retrieveContext", () => {
     );
 
     const result = retrieveContext(store, {
-      query: "ASR incident",
-      anchorNodeIds: ["asr"],
-      currentScope: { projectId: "asr" },
+      query: "Atlas incident",
+      anchorNodeIds: ["atlas"],
+      currentScope: { projectId: "atlas" },
       semanticScores: {
-        asr: 0.8,
-        "asr-incident": 0.9,
+        atlas: 0.8,
+        "atlas-incident": 0.9,
         vinted: 1,
         "vinted-incident": 1,
       },
@@ -66,13 +66,13 @@ describe("retrieveContext", () => {
         maxNodes: 10,
         maxDepth: 3,
         minimumScore: 0.2,
-        allowedPathPrefixes: ["/projects/asr"],
+        allowedPathPrefixes: ["/projects/atlas"],
         deniedPathPrefixes: [],
         allowedLinkTypes: [],
       },
     });
 
-    expect(result.nodes.map((item) => item.node.id)).toContain("asr-incident");
+    expect(result.nodes.map((item) => item.node.id)).toContain("atlas-incident");
     expect(result.nodes.map((item) => item.node.id)).not.toContain("vinted");
   });
 });

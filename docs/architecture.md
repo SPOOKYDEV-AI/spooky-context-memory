@@ -1,84 +1,117 @@
 # Architecture
 
-## 1. Hierarchical ownership
+## Design objective
 
-Every node has one primary parent and one materialized path.
+Spooky Context Memory is designed to reuse past experience without allowing old context to dominate a new task.
 
-```text
-/projects/spooky-council/workflows/debugging/incidents
-```
-
-The tree defines ownership, isolation, and inheritance.
-
-## 2. Typed cross-links
-
-A node can reference another branch through an explicitly typed link:
-
-- `uses`
-- `depends_on`
-- `derived_from`
-- `supersedes`
-- `contradicts`
-- `related_to`
-- `validated_by`
-
-Retrieval policies choose which link types may be traversed.
-
-## 3. Context cone
-
-Retrieval starts from trusted anchors. Allowed and denied path prefixes define the context cone. Search and ranking happen only inside that cone.
-
-## 4. Best-first traversal
-
-Best-first traversal prioritizes nodes using:
-
-- semantic relevance supplied by an adapter;
-- scope match;
-- path proximity;
-- confidence;
-- freshness;
-- source trust;
-- status penalties.
-
-The core package does not require an embedding provider.
-
-## 5. Incident applicability
-
-Historical incidents are matched against the current task using:
-
-- intent;
-- target;
-- project;
-- workflow;
-- environment;
-- trigger conditions;
-- exclusion conditions;
-- symptom similarity.
-
-Matching an error message is not sufficient to apply a fix.
-
-## 6. Storage
-
-The current MVP includes an in-memory adapter. Planned adapters:
-
-- SQLite;
-- PostgreSQL;
-- JSON Lines for portable experiments;
-- optional vector indexes;
-- optional graph-database adapters.
-
-## 7. Safety boundaries
-
-The memory engine provides context, not authority. Integrators should keep destructive actions behind deterministic policy checks and human approval.
-
-## 8. Experience Capsule Compiler
-
-Execution traces are converted into candidate capsules by a deterministic compiler. The compiler preserves the original task signature, mistakes, failed attempts, root cause, resolution rationale, applicability boundaries, and validation evidence.
-
-Compilation and activation are deliberately separate:
+The engine separates eight responsibilities:
 
 ```text
-execution trace → candidate capsule → user approval + tests → active capsule
+Capture
+→ Episode analysis
+→ Contrast and causal claims
+→ Admission
+→ Capsule and pattern memory
+→ Vision resolution
+→ Heuristic retrieval
+→ Preventive preflight
 ```
 
-No model-generated capsule becomes active automatically. The activation API rejects capsules without explicit approval or sufficient passing evidence.
+## 1. Capture and episodes
+
+An `InteractionEpisode` groups attempts that answer the same user need. Each attempt contains the interpretation, actions, result fingerprint, technical evidence, and user verdict.
+
+The user verdict answers only whether the produced result matched the desired outcome.
+
+## 2. Contrastive analysis
+
+Rejected and accepted attempts are compared deterministically. Differences are recorded as candidate discriminators. Stable relationships, such as two accepted numeric dimensions becoming equal after rejected attempts were unequal, can be surfaced as supported relational discriminators.
+
+Contrast does not prove causality by itself.
+
+## 3. Claims
+
+Technical explanations are stored as claims:
+
+- observation;
+- outcome fit;
+- hypothesis;
+- root cause;
+- resolution;
+- applicability;
+- contextual user preference.
+
+Claims can be unverified, supported, verified, disputed, refuted, or stale. Independent evidence groups are counted once to avoid false confidence from duplicated test output.
+
+## 4. Admission
+
+The admission gate decides whether an episode should:
+
+- create a candidate capsule;
+- extend an existing pattern;
+- remain a raw trace;
+- request more evidence;
+- be rejected as memory.
+
+This prevents transient errors and unisolated changes from flooding active memory.
+
+## 5. Capsules and patterns
+
+An experience capsule preserves one concrete episode and its scope.
+
+A pattern captures a recurring causal mechanism across multiple capsules. Patterns do not contain a universal technical fix. They contain warning signals, likely consequences, invariants, checks, and prohibited shortcuts.
+
+Independent projects, workflows, and environments increase pattern support. Duplicate episodes in the same context do not count as fully independent evidence.
+
+## 6. Visions
+
+A Vision is an ephemeral or cached search plan generated from the current task signature and memory revision.
+
+It contains:
+
+- anchor branches;
+- allowed branches;
+- deterministic exclusions;
+- deferred frontiers;
+- likely pattern identifiers;
+- traversal limits.
+
+A Vision is resolved before graph routing. It does not store private business data in the public library.
+
+## 7. Heuristic routing
+
+The router uses an A*-style priority queue. The route cost combines:
+
+- edge cost;
+- scope uncertainty;
+- low relevance;
+- contamination risk;
+- contradiction risk;
+- weak evidence;
+- unknown applicability conditions.
+
+Hard exclusions are evaluated before the heuristic. A forbidden branch is ineligible rather than merely low-scoring.
+
+The frontier can be cached so deferred paths are not forgotten and the graph does not need to be recalculated from zero after every failed hypothesis.
+
+## 8. Belief updates
+
+Hypothesis probabilities can be updated as evidence is encountered. Evidence sharing the same independence key is collapsed to the strongest item before the update. This avoids treating repeated output from one run as several independent proofs.
+
+## 9. Memory Preflight
+
+The final context compiler does not inject complete capsules. It emits a compact preventive contract:
+
+```text
+Must preserve
+Known failure modes
+Pruned approaches
+Verify before acting
+Unresolved unknowns
+```
+
+This is the only part intended for direct injection into an agent prompt by default.
+
+## 10. Storage boundary
+
+Persistence is intentionally postponed until the episode, claim, pattern, and Vision contracts stabilize. Future adapters should keep an append-only lifecycle and separate public engine code from private runtime data.

@@ -8,8 +8,8 @@ const incident: IncidentMemory = {
   id: "powershell-scalar-count",
   originalTask: {
     intent: "uninstall_project_runtime",
-    target: "ASR runtime",
-    projectId: "asr",
+    target: "Atlas runtime",
+    projectId: "atlas",
     workflowId: "uninstall",
     expectedOutcome: "Remove zero, one, or many project runtimes safely.",
     operations: ["discover_runtime", "remove_runtime"],
@@ -76,10 +76,10 @@ const incident: IncidentMemory = {
 
 const currentTask: TaskSignature = {
   intent: "uninstall_project_runtime",
-  target: "ASR runtime",
-  projectId: "asr",
+  target: "Atlas runtime",
+  projectId: "atlas",
   workflowId: "uninstall",
-  expectedOutcome: "Remove every ASR runtime found.",
+  expectedOutcome: "Remove every Atlas runtime found.",
   operations: ["discover_runtime", "remove_runtime"],
   constraints: [
     "powershell_5_1_compatible",

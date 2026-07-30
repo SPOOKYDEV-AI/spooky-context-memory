@@ -4,8 +4,8 @@ import { isPathAllowed } from "../src/traversal/path-policy.js";
 describe("isPathAllowed", () => {
   it("allows descendants of an allowed path", () => {
     expect(
-      isPathAllowed("/projects/asr/incidents", {
-        allowedPathPrefixes: ["/projects/asr"],
+      isPathAllowed("/projects/atlas/incidents", {
+        allowedPathPrefixes: ["/projects/atlas"],
         deniedPathPrefixes: [],
       }),
     ).toBe(true);
@@ -13,9 +13,9 @@ describe("isPathAllowed", () => {
 
   it("lets denied paths override allowed paths", () => {
     expect(
-      isPathAllowed("/projects/asr/secrets/api-key", {
-        allowedPathPrefixes: ["/projects/asr"],
-        deniedPathPrefixes: ["/projects/asr/secrets"],
+      isPathAllowed("/projects/atlas/secrets/api-key", {
+        allowedPathPrefixes: ["/projects/atlas"],
+        deniedPathPrefixes: ["/projects/atlas/secrets"],
       }),
     ).toBe(false);
   });

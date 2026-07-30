@@ -10,13 +10,13 @@ import {
 
 function makeTrace(overrides: Partial<ExecutionTrace> = {}): ExecutionTrace {
   return {
-    id: "trace-asr-uninstall-001",
+    id: "trace-atlas-uninstall-001",
     task: {
       intent: "uninstall_project_runtime",
-      target: "ASR runtime",
-      projectId: "asr",
+      target: "Atlas runtime",
+      projectId: "atlas",
       workflowId: "uninstall",
-      expectedOutcome: "Remove zero, one, or many ASR runtimes safely.",
+      expectedOutcome: "Remove zero, one, or many Atlas runtimes safely.",
       operations: ["discover_runtime", "remove_runtime"],
       constraints: ["powershell_5_1_compatible"],
       forbiddenEffects: ["remove_unrelated_runtime"],
@@ -27,7 +27,7 @@ function makeTrace(overrides: Partial<ExecutionTrace> = {}): ExecutionTrace {
       observedSymptoms: ["Count property is missing"],
     },
     scope: {
-      projectId: "asr",
+      projectId: "atlas",
       workflowId: "uninstall",
       taskId: "task-001",
     },
@@ -148,8 +148,22 @@ describe("compileCapsuleCandidate", () => {
     expect(capsule.experience.rootCause).toContain("scalar");
     expect(capsule.resolution.rationale).toContain("uniformly");
     expect(capsule.applicability.exclusionConditions).toHaveLength(1);
-    expect(capsule.origin.projectId).toBe("asr");
+    expect(capsule.origin.projectId).toBe("atlas");
     expect(capsule.origin.workflowId).toBe("uninstall");
+    expect(
+      capsule.claims.find((claim) => claim.kind === "root_cause")?.status,
+    ).toBe("unverified");
+  });
+
+  it("keeps an unknown root cause unknown instead of inventing one", () => {
+    const capsule = compileCapsuleCandidate(makeTrace({ rootCause: null }), {
+      createdBy: "SPOOKYDEV-AI",
+    });
+
+    expect(capsule.experience.rootCause).toBeNull();
+    expect(capsule.claims.some((claim) => claim.kind === "root_cause")).toBe(
+      false,
+    );
   });
 
   it("rejects an incomplete trace instead of inventing knowledge", () => {
@@ -173,7 +187,7 @@ describe("capsule activation", () => {
     const decision = evaluateCapsuleActivation(capsule, {
       approval: {
         approved: false,
-        approvedBy: "François",
+        approvedBy: "maintainer",
         approvedAt: "2026-07-30T10:32:00.000Z",
       },
     });
@@ -192,14 +206,37 @@ describe("capsule activation", () => {
       activateCapsule(capsule, {
         approval: {
           approved: true,
-          approvedBy: "François",
+          approvedBy: "maintainer",
           approvedAt: "2026-07-30T10:32:00.000Z",
         },
       }),
     ).toThrow(CapsuleActivationError);
   });
 
-  it("activates only after user approval and passing evidence", () => {
+  it("rejects activation when the final outcome was not accepted for reuse", () => {
+    const capsule = compileCapsuleCandidate(makeTrace(), {
+      createdBy: "SPOOKYDEV-AI",
+    });
+
+    const decision = evaluateCapsuleActivation(capsule, {
+      approval: {
+        approved: true,
+        approvedBy: "maintainer",
+        approvedAt: "2026-07-30T10:32:00.000Z",
+        scope: {
+          outcomeAccepted: false,
+          reusableAsMemory: false,
+        },
+      },
+    });
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.failureCodes).toContain(
+      "USER_OUTCOME_ACCEPTANCE_REQUIRED",
+    );
+  });
+
+  it("activates only after user outcome approval and passing evidence", () => {
     const candidate = compileCapsuleCandidate(makeTrace(), {
       createdBy: "SPOOKYDEV-AI",
     });
@@ -207,16 +244,26 @@ describe("capsule activation", () => {
     const active = activateCapsule(candidate, {
       approval: {
         approved: true,
-        approvedBy: "François",
+        approvedBy: "maintainer",
         approvedAt: "2026-07-30T10:32:00.000Z",
-        comment: "The correction matches the initial need.",
+        comment: "The final result matches the requested outcome.",
+        scope: {
+          outcomeAccepted: true,
+          reusableAsMemory: true,
+        },
       },
       activatedAt: "2026-07-30T10:33:00.000Z",
     });
 
     expect(active.lifecycle.status).toBe("active");
     expect(active.lifecycle.activatedAt).toBe("2026-07-30T10:33:00.000Z");
-    expect(active.validation.userApproval?.approvedBy).toBe("François");
+    expect(active.validation.userApproval?.approvedBy).toBe("maintainer");
+    expect(
+      active.claims.find((claim) => claim.kind === "outcome_fit")?.status,
+    ).toBe("verified");
+    expect(
+      active.claims.find((claim) => claim.kind === "root_cause")?.status,
+    ).toBe("unverified");
     expect(candidate.lifecycle.status).toBe("candidate");
   });
 });

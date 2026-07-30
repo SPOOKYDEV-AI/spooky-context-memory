@@ -9,7 +9,10 @@ export type MemoryNodeType =
   | "incident"
   | "artifact"
   | "summary"
-  | "hypothesis";
+  | "hypothesis"
+  | "episode"
+  | "capsule"
+  | "pattern";
 
 export type MemoryNodeStatus =
   | "active"
@@ -24,7 +27,11 @@ export type MemoryLinkType =
   | "supersedes"
   | "contradicts"
   | "related_to"
-  | "validated_by";
+  | "validated_by"
+  | "instance_of"
+  | "extends"
+  | "narrows"
+  | "duplicates";
 
 export type SourceType =
   | "user"

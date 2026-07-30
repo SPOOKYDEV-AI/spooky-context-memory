@@ -1,0 +1,19 @@
+{
+  "scenarioId": "forbidden-branch",
+  "task": {
+    "intent": "manual_execution",
+    "forbiddenEffects": ["implicit_start"]
+  },
+  "branches": [
+    {
+      "id": "manual-explicit",
+      "predictedEffects": [],
+      "expected": "allowed"
+    },
+    {
+      "id": "semantic-near-auto-start",
+      "predictedEffects": ["implicit_start"],
+      "expected": "pruned"
+    }
+  ]
+}

@@ -1,85 +1,59 @@
 # Experience Capsules
 
-Experience capsules preserve **why** a technical correction was made without turning a local fix into a universal rule.
+Experience capsules preserve a concrete trajectory without converting it into an unconditional rule.
 
-## Three-layer model
+## Lifecycle
 
 ```text
-Raw execution trace
+Raw interaction episode
         ↓
-Candidate experience capsule
+Contrastive analysis and claims
         ↓
-Explicit user approval + passing evidence
+Admission gate
+        ↓
+Candidate capsule
+        ↓
+Accepted user outcome + technical evidence
         ↓
 Active capsule
 ```
 
-The compiler is deterministic. It does not call an LLM and does not invent missing causes, resolutions, or applicability conditions.
+## User validation
 
-## Candidate compilation
+The user normally validates the final result:
 
-`compileCapsuleCandidate` preserves:
-
-- the original intent, target, expected outcome, constraints, and forbidden effects;
-- plans and decisions;
-- errors and their actors;
-- failed attempts;
-- rejected hypotheses;
-- the diagnosed root cause;
-- the final resolution and its rationale;
-- preserved invariants, trade-offs, and risks;
-- required and exclusion conditions;
-- compatible environments;
-- validation evidence.
-
-A compiled capsule always starts with:
-
-```ts
-{
-  lifecycle: {
-    status: "candidate",
-    activatedAt: null
-  },
-  validation: {
-    userApproval: null
-  }
-}
+```text
+accepted / rejected / partially accepted / unknown
 ```
 
-## Controlled activation
+This does not automatically validate the inferred root cause or the general applicability of a correction.
 
-`activateCapsule` is an explicit operation. By default, it requires:
+`CapsuleUserApproval.scope` can explicitly record:
 
-1. an approval object with `approved: true`;
-2. at least one passing evidence item;
-3. every attached evidence item to pass.
+- `outcomeAccepted`;
+- `reusableAsMemory`;
+- optional root-cause acceptance;
+- optional applicability acceptance.
 
-The original candidate object is not mutated. Activation returns a new object.
+The activation API does not require the user to provide a technical diagnosis.
 
-```ts
-const active = activateCapsule(candidate, {
-  approval: {
-    approved: true,
-    approvedBy: "maintainer",
-    approvedAt: new Date().toISOString(),
-  },
-});
-```
+## Claims
 
-Applications should persist candidate and active capsules separately or keep an append-only lifecycle journal.
+A compiled capsule contains candidate claims. The root-cause claim starts as `unverified`. Passing implementation evidence may support the resolution claim without proving the cause.
 
-## Why activation is separate
+After activation, the outcome-fit claim is verified from the user verdict. Other claims retain their own evidence status.
 
-A model can propose a useful memory but cannot decide alone that the memory is true, current, or reusable. The user validates that the resolution satisfies the initial need, while deterministic evidence validates the implementation.
+## Unknown causes
+
+`ExecutionTrace.rootCause` may be `null`. The compiler must not invent a cause to complete the capsule.
 
 ## Non-goals
 
-The Capsule Compiler does not:
+A capsule does not:
 
-- summarize arbitrary conversations automatically;
-- activate memories after a model response;
-- generalize a project-specific fix into a shared rule;
-- persist capsules;
-- decide which capsule should be retrieved for a future task.
-
-Those responsibilities belong to ingestion, storage, retrieval, and human-governance layers.
+- summarize an arbitrary conversation;
+- become active after every successful response;
+- represent a universal rule;
+- replace pattern detection;
+- force the complete episode into model context;
+- contain private data in public fixtures.

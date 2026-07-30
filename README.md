@@ -1,69 +1,66 @@
 # Spooky Context Memory
 
-**Scope-aware hierarchical memory and incident retrieval for reliable AI coding agents.**
+**Scope-aware experiential memory for reliable AI agents.**
 
-Spooky Context Memory is an open-source TypeScript library for agents that must remember technical decisions, failures, and fixes **without applying old information outside its original scope**.
+Spooky Context Memory is a TypeScript library for agents that must learn from accepted and rejected outcomes without turning every past event into a universal rule.
 
-It combines:
+The engine combines:
 
-- a hierarchical memory tree for project and workflow isolation;
-- typed cross-links for controlled graph navigation;
-- BFS, DFS, and best-first traversal;
-- allow/deny path policies;
-- task-scoped retrieval;
-- provenance, confidence, freshness, and status metadata;
-- contextual incident memories;
+- hierarchical scope isolation and typed graph links;
+- contextual incident matching;
 - deterministic experience-capsule compilation;
-- controlled activation requiring user approval and passing evidence;
-- explicit `appliesWhen` and `doesNotApplyWhen` conditions;
-- classification of historical incidents as applicable, diagnostic-only, or out of scope.
+- explicit separation between user outcome validation and technical claims;
+- contrastive analysis of rejected and accepted attempts;
+- causal claims with evidence and contradiction tracking;
+- admission gates that prevent low-value traces from becoming active memory;
+- pattern detection across independent contexts;
+- **Visions** that prune impossible branches before graph search;
+- A*-style heuristic routing inside the allowed subgraph;
+- compact preventive preflight context for the agent.
 
-## Why this project exists
+## Core idea
 
-Global semantic search can retrieve information that looks relevant but belongs to:
-
-- another project;
-- another workflow;
-- an obsolete implementation;
-- a different runtime or operating system;
-- a different initial user need.
-
-This project treats semantic similarity as **one ranking signal**, never as the authority that defines the search perimeter.
+The user normally validates the final result, not the technical explanation.
 
 ```text
-Current task
+Initial request
     ↓
-Select trusted anchor branches
+Attempt rejected by the user
     ↓
-Build an allowed context cone
+Corrected attempt accepted by the user
     ↓
-Traverse only authorized nodes
+Contrastive analysis
     ↓
-Rank candidates inside that perimeter
+Candidate causal claims
     ↓
-Validate scope, freshness, and applicability
+Experience capsule
     ↓
-Compile minimal context for the agent
+Pattern detection
+    ↓
+Preventive memory for future tasks
 ```
 
-## Core principle
+A user saying “yes” confirms that the result matches the requested outcome. It does not automatically prove the inferred root cause, the optimality of the implementation, or a universal rule.
 
-An incident is not stored as:
+## Why a Vision exists
+
+The complete memory graph must not be traversed for every request.
 
 ```text
-Error X → Fix Y
+Current task signature
+    ↓
+Hard scope and forbidden-effect checks
+    ↓
+Vision resolution
+    ↓
+Deterministic branch pruning
+    ↓
+A* routing over the remaining subgraph
+    ↓
+Minimal Memory Preflight
 ```
 
-It is stored as:
-
-```text
-For objective B,
-inside workflow W,
-under conditions C,
-error X occurred because of cause R.
-Resolution Y produced outcome Z,
-and must not be reused when exclusions E are true.
-```
+A Vision is a contextual search plan. It contains anchors, allowed branches, exclusions, deferred frontiers, likely patterns, and a traversal budget. It is not a copy of the memory and it does not contain private project data in this public repository.
 
 ## Installation
 
@@ -78,93 +75,32 @@ npm install
 npm run check
 ```
 
-## Quick example
+Node.js 20 or later is required.
 
-```ts
-import {
-  InMemoryMemoryStore,
-  retrieveContext,
-  type MemoryNode,
-} from "@spooky-ai/context-memory";
+## Public/private boundary
 
-const store = new InMemoryMemoryStore();
+This repository contains only:
 
-const root: MemoryNode = {
-  id: "asr",
-  parentId: null,
-  path: "/projects/asr",
-  type: "project",
-  status: "active",
-  title: "ASR",
-  summary: "Document automation project.",
-  scope: { projectId: "asr" },
-  metadata: {
-    confidence: 1,
-    sourceTrust: 1,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  provenance: {
-    sourceType: "user",
-    createdBy: "maintainer",
-  },
-};
+- generic engine code;
+- synthetic examples;
+- public fixtures;
+- deterministic tests.
 
-store.addNode(root);
+Real traces, capsules, patterns, Visions, user preferences, private repositories, paths, customer names, and project identifiers must be stored outside the public source tree.
 
-const result = retrieveContext(store, {
-  query: "Fix the ASR runtime uninstall workflow",
-  anchorNodeIds: ["asr"],
-  currentScope: { projectId: "asr" },
-  traversal: {
-    maxNodes: 12,
-    maxDepth: 4,
-    minimumScore: 0.35,
-    allowedPathPrefixes: ["/projects/asr", "/shared-skills/powershell"],
-    deniedPathPrefixes: ["/projects/other", "/personal"],
-    allowedLinkTypes: ["depends_on", "validated_by", "supersedes"],
-  },
-});
-
-console.log(result.nodes);
-```
-
-See [`examples/incident-applicability.ts`](examples/incident-applicability.ts) for a complete incident-matching example.
-
-## Architecture
+Recommended ignored paths:
 
 ```text
-src/
-├── domain/         # Public types and contracts
-├── storage/        # Storage adapters
-├── traversal/      # BFS, DFS and best-first traversal
-├── retrieval/      # Context cone, scoring and compilation
-├── incidents/      # Applicability and exclusion logic
-└── capsules/       # Candidate compilation and controlled activation
+.context-memory/private/
+*.memory.db
+*.vision.private.json
+*.capsule.private.json
+*.trace.private.json
 ```
 
-The storage contract is intentionally small. PostgreSQL, SQLite, Neo4j, document stores, and vector databases can be added without changing the domain model.
+See [`docs/privacy-boundary.md`](docs/privacy-boundary.md).
 
-## Retrieval safeguards
-
-Denied paths always win over allowed paths.
-
-```ts
-{
-  allowedPathPrefixes: ["/projects/asr", "/shared-skills/powershell"],
-  deniedPathPrefixes: ["/projects/asr/secrets", "/personal"]
-}
-```
-
-A historical incident is never automatically treated as a valid fix. It is classified as:
-
-- `applicable`;
-- `diagnostic_reference`;
-- `out_of_scope`.
-
-## Experience capsules
-
-The Capsule Compiler converts a structured execution trace into a **candidate** memory capsule. It preserves the initial need, errors, failed attempts, root cause, resolution rationale, applicability boundaries, and validation evidence.
+## Capsule example
 
 ```ts
 import {
@@ -175,54 +111,143 @@ import {
 
 const candidate = compileCapsuleCandidate(trace, {
   createdBy: "maintainer",
-  confidence: 0.9,
+  confidence: 0.8,
 });
-
-console.log(candidate.lifecycle.status); // candidate
 
 const active = activateCapsule(candidate, {
   approval: {
     approved: true,
     approvedBy: "maintainer",
     approvedAt: new Date().toISOString(),
+    scope: {
+      outcomeAccepted: true,
+      reusableAsMemory: true,
+    },
   },
+});
+
+console.log(active.lifecycle.status); // active
+```
+
+The user outcome claim becomes verified. A root-cause claim remains unverified until independent evidence supports it.
+
+## Contrastive episode example
+
+```ts
+import {
+  analyzeEpisode,
+  extractEpisodeContrast,
+} from "@spooky-ai/context-memory";
+
+const analysis = analyzeEpisode(episode);
+const contrast = extractEpisodeContrast(episode);
+
+console.log(analysis.hasOutcomeContrast);
+console.log(contrast.inferredDiscriminators);
+```
+
+The analyzer can identify that an accepted square has equal width and height after a generic rectangle was rejected. It records this as a supported discriminator, not as a universal truth.
+
+## Vision and heuristic routing
+
+```ts
+import {
+  resolveMemoryVision,
+  routeMemoryWithVision,
+} from "@spooky-ai/context-memory";
+
+const vision = resolveMemoryVision({
+  task,
+  scope,
+  branches,
+  memoryRevision: 12,
+});
+
+const routing = routeMemoryWithVision({
+  vision,
+  nodes,
+  edges,
+  startNodeIds: vision.anchors,
 });
 ```
 
-Compilation never activates a capsule. Activation is a separate, explicit operation that requires user approval and passing validation evidence. See [`docs/capsules.md`](docs/capsules.md) and [`examples/capsule-compiler.ts`](examples/capsule-compiler.ts).
+Hard exclusions are applied before heuristic scoring. A semantically attractive branch that predicts a forbidden effect is removed, not merely given a lower score.
 
-## Research direction
+## Memory Preflight
 
-The repository is also an experimental foundation for comparing:
+```ts
+import {
+  buildMemoryPreflight,
+  compilePreflightContext,
+} from "@spooky-ai/context-memory";
 
-1. global semantic retrieval;
-2. tree-scoped retrieval;
-3. tree-scoped retrieval with typed cross-links;
-4. best-first traversal with contextual incident applicability.
+const preflight = buildMemoryPreflight({
+  task,
+  capsules: applicableCapsules,
+  patterns: preventivePatterns,
+});
 
-Planned evaluation metrics include:
+const context = compilePreflightContext(preflight, {
+  maxCharacters: 1_500,
+});
+```
 
-- irrelevant-context rate;
-- wrong-fix reuse rate;
-- task success rate;
-- model calls and token consumption;
-- correction iterations;
-- deterministic test success;
-- human intervention rate.
+The model receives only:
 
-See [`docs/research-protocol.md`](docs/research-protocol.md).
+- what must be preserved;
+- known failure modes;
+- approaches already pruned;
+- facts that must be verified;
+- unresolved unknowns.
 
-## Project status
+Exploring a capsule never implies injecting the complete capsule.
 
-This is an early public MVP. The public API may evolve before `1.0.0`.
+## Architecture
 
-## Contributing
+```text
+src/
+├── domain/       Generic memory graph contracts
+├── storage/      Storage interfaces and in-memory adapter
+├── traversal/    BFS, DFS and path policies
+├── retrieval/    Scope-aware best-first retrieval
+├── incidents/    Historical incident applicability
+├── capsules/     Candidate compilation and controlled activation
+├── episodes/     User-outcome episodes and contrast extraction
+├── claims/       Evidence-aware causal claims
+├── admission/    Capsule admission decisions
+├── patterns/     Cross-context pattern detection and support
+├── visions/      Contextual subgraph plans and cache
+├── routing/      A* routing, frontier cache and belief updates
+├── preflight/    Minimal preventive context compilation
+├── privacy/      Public-fixture boundary checks
+└── evaluation/   Retrieval and contamination metrics
+```
 
-Contributions, reproducible incident examples, storage adapters, benchmarks, and retrieval-policy proposals are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+## Invariants
 
-## Security
+1. User approval validates the final outcome by default, not the root cause.
+2. Unknown causes remain unknown.
+3. Semantic similarity never grants authority.
+4. Hard scope and forbidden-effect exclusions run before heuristic search.
+5. Capsules preserve episodes; patterns preserve recurring mechanisms.
+6. Multiple events from the same source are not counted as independent proof.
+7. A Vision limits traversal before graph exploration.
+8. Visited memory and injected memory are separate sets.
+9. Private runtime data never belongs in the public repository.
+10. Persistence must not freeze an unstable semantic model.
 
-Please do not publish secrets, private repositories, production data, or unresolved vulnerabilities in issues. See [`SECURITY.md`](SECURITY.md).
+## Status
+
+The repository is an early research implementation. The next milestones focus on benchmarks, false-pruning analysis, pattern quality, and only then persistent adapters.
+
+See:
+
+- [`docs/memory-v0.2-specification.md`](docs/memory-v0.2-specification.md)
+- [`docs/capsules.md`](docs/capsules.md)
+- [`docs/patterns.md`](docs/patterns.md)
+- [`docs/visions.md`](docs/visions.md)
+- [`docs/research-protocol.md`](docs/research-protocol.md)
+- [`docs/roadmap.md`](docs/roadmap.md)
 
 ## License
 
