@@ -2,7 +2,7 @@
 
 ## Design objective
 
-Spooky Context Memory reuses past experience without allowing old context to dominate a new task or disappear before its useful value has been transferred.
+Spooky Context Memory reuses past experience while preserving epistemic boundaries, contextual continuity, alternative interpretations, and retroactive learning.
 
 The complete pipeline is:
 
@@ -13,144 +13,93 @@ Conversation stream
 → Episode and contrast analysis
 → Capsule accumulation and admission
 → Capsule and pattern memory
-→ Context release
+→ Epistemic Core
+→ Distributed Memory Attention
+→ Many cheap attention-driven Views
+→ Cross-View triage
 → Progressive Vision ensemble
 → Local heuristic retrieval and backtracking
 → Selective reconstruction
-→ Preventive preflight
+→ Action or prediction
+→ Outcome verdict
+→ Retroactive memory plasticity
+→ Dynamic equilibrium
 ```
 
 ## 1. Context Dynamics
 
-The conversation is represented as a `ContextField`, not one global `currentContext`.
+A `ContextField` contains several progressively activated frames rather than one global current context. Frames carry topic, intent, scope, activation, relevance, inertia, retention state, provenance, and protection reasons.
 
-Each `ContextFrame` contains:
+## 2. Situational Memory
 
-- topic and intent;
-- scope;
-- activation and relevance;
-- inertia;
-- activation state;
-- retention state;
-- context parents and source turns;
-- protected reasons.
+A `Situation` groups contexts serving one coherent objective. Its `ContextContract` protects the initial need, current goal, invariants, discriminators, forbidden effects, acceptance criteria, decisions, rejected trajectories, and unresolved questions across phases.
 
-A context can be dominant, overlapping, background, or dormant. A new explicit topic shift boosts a new frame while older frames decay progressively according to inertia. Pinned frames retain a minimum active trace.
+## 3. Episodes, claims, capsules, and patterns
 
-## 2. Context transitions
+Interaction episodes separate accepted, rejected, partial, and unknown outcomes. Contrast extraction proposes discriminators without inventing causes. Claims retain evidence and uncertainty. Capsules preserve scoped episodes; patterns preserve recurring mechanisms across independent contexts.
 
-`ContextTransition` records how the discussion moved from one context to another. The transition path supports questions such as “How did we arrive here?” without replaying the full transcript.
+## 4. Context release and reconstruction
 
-Supported triggers include continuation, explicit topic change, association, clarification, digression, return to previous context, and new event.
+The `ContextReleaseGate` requires proof of transfer before context leaves the active working set. Reconstruction combines only the current task, applicable memory, relevant dormant context, transition paths, and unresolved checks. Inspected memory remains separate from injected memory.
 
-## 3. Situational Memory
+## 5. Epistemic Core
 
-A `Situation` groups context frames and transitions serving one coherent objective. It moves through exploration, convergence, implementation, validation, and closed phases.
+The `EpistemicCore` stores truth anchors with source identifiers, state, confidence, scope, validity interval, revision, contradictions, and supersession.
 
-Its `ContextContract` preserves:
+Authority classes distinguish authoritative facts, verified results, supported claims, observations, inferences, hypotheses, disputes, refutations, and unknowns. Challenges must be proportional to authority.
 
-- initial need;
-- current goal;
-- invariants;
-- discriminating properties;
-- forbidden effects;
-- acceptance criteria;
-- accepted decisions;
-- rejected trajectories;
-- unresolved questions.
+## 6. Distributed Memory Attention
 
-A `PhaseHandoff` records which frames remain active, compacted, or dormant. Context quantity can decrease while task fidelity remains constant.
+A `MemoryAttentionField` maintains bounded focuses for goals, constraints, uncertainty, experience, challenge, transition, risk, and exploration.
 
-## 4. Capsule accumulation
+The allocator merges redundant focuses, protects pinned focuses, guarantees configured role coverage, assigns budgets, decays stale attention, and reactivates attention after context or outcome changes.
 
-A `CapsuleAccumulator` collects reusable information while the situation is unfolding. It computes completeness, stability, and reusable value.
+## 7. Attention-driven Views
 
-The accumulator may become ready but never automatically creates active knowledge. Admission, evidence, user validation, and capsule lifecycle controls still apply.
+An `AttentionView` records:
 
-## 5. Context release
+- the focuses that produced it;
+- truth anchors and assumptions;
+- candidate branches;
+- questions covered;
+- conclusions;
+- expected cost and risk;
+- evidence and contextual revisions.
 
-The `ContextReleaseGate` separates release from deletion.
+Many candidate Views can be generated cheaply. Hard scope, forbidden-effect, and truth checks execute before ranking.
 
-Possible retention states are:
+## 8. Cross-View triage
 
-```text
-pinned
-→ active
-→ background
-→ compacted
-→ dormant
-→ archived
-→ eligible_for_deletion
-```
+Triage merges redundant Views, qualifies rejected Views, preserves active and deferred alternatives, and emits:
 
-Release requires proof that need, constraints, decisions, provenance, uncertainty, and useful failed trajectories have been transferred. Active dependencies or pinned status block release.
+- consensus;
+- divergences;
+- coverage gaps;
+- one defeasible dominant View when justified;
+- compact rejected traces;
+- bounded progressive Vision seeds.
 
-## 6. Episodes and contrast
+## 9. Progressive Vision routing
 
-An `InteractionEpisode` groups attempts answering the same user need. Rejected and accepted results are compared deterministically. Differences become candidate discriminating properties, not automatic causal truths.
+The `ProgressiveVisionEnsemble` explores selected local hypotheses with bounded beams, splitting, merging, checkpoints, loop guards, and backtracking. Pruning a Vision never deletes memory.
 
-## 7. Claims and admission
+## 10. Retroactive learning
 
-Technical explanations are stored as evidence-aware claims. The admission gate chooses between candidate capsule, pattern extension, raw trace, more evidence, or rejection.
+An observed outcome produces a qualified View verdict. The retroactive loop then:
 
-## 8. Capsules and patterns
+- reinforces or challenges the attentions that generated the View;
+- creates contradiction attention when necessary;
+- records compact rejection and revisit conditions;
+- updates only affected plastic links;
+- proposes capsule reinforcement, narrowing, extension, splitting, or dispute;
+- invalidates or reconsiders dependent Views.
 
-Capsules preserve concrete scoped episodes. Patterns preserve recurring causal mechanisms across independent contexts. Pattern support counts independent projects, workflows, and environments rather than duplicated output.
+## 11. Dynamic equilibrium
 
-## 9. Visions
+The controller monitors fidelity, constraint coverage, attention diversity, View diversity, challenge coverage, uncertainty coverage, exploration breadth and depth, injection efficiency, stability, plasticity, and exploration debt.
 
-A Vision is a contextual search plan containing anchors, allowed branches, deterministic exclusions, deferred frontiers, likely patterns, and traversal budgets.
+Bands and hysteresis prevent overreaction. Corrections are minimal and local.
 
-`updateMemoryVision` reevaluates only affected branches while preserving unaffected routing work. Context frame identifiers can become anchors without rescoring every branch.
+## 12. Storage boundary
 
-## 10. Progressive Vision routing
-
-One broad Vision is no longer required to carry the complete search interpretation. A `ProgressiveVisionEnsemble` maintains several bounded micro-Visions tied to the current context revision.
-
-The manager can:
-
-- spawn new hypotheses;
-- split broad branch sets;
-- merge equivalent Visions;
-- supersede dominated Visions;
-- prune contradicted or context-stale Visions;
-- retain one dominant and several alternative Visions;
-- emit checkpoints before deeper exploration;
-- backtrack to a previous frontier;
-- block circular states without new progress.
-
-A dominant Vision receives more budget but remains defeasible.
-
-## 11. Heuristic routing
-
-The A*-style router explores only the Vision-approved subgraph. Hard exclusions execute before heuristic scoring. Deferred frontiers can be cached.
-
-## 12. Selective reconstruction
-
-A persistent capsule is stored evidence. A remembered context is a new reconstruction for the present task.
-
-The reconstructor combines:
-
-- current task constraints;
-- relevant context frames;
-- applicable active capsules;
-- supported patterns;
-- transition paths;
-- unresolved applicability conditions.
-
-The output is bounded and excludes raw transcript by default.
-
-## 13. Context efficiency
-
-Performance is measured by more than token reduction. Phase metrics include:
-
-- fidelity to preserved invariants;
-- information density;
-- compaction ratio;
-- phase intensity.
-
-The goal is stable task fidelity with progressively denser context.
-
-## 14. Storage boundary
-
-Persistent adapters remain a later milestone. Public code contains algorithms and synthetic fixtures only. Real contexts, transitions, situations, accumulators, capsules, patterns, and Visions belong in private runtime storage.
+The semantic model remains storage-neutral. Public code contains deterministic algorithms and synthetic fixtures only. Real contexts, truths, attentions, Views, traces, links, capsules, patterns, and equilibrium snapshots belong in private runtime storage.

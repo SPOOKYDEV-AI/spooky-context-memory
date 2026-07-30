@@ -1,6 +1,6 @@
 # Spooky Context Memory
 
-**Scope-aware experiential memory and context dynamics for reliable AI agents.**
+**Scope-aware experiential memory, distributed attention, and retroactive learning for reliable AI agents.**
 
 Spooky Context Memory is a TypeScript library for agents that must learn from accepted and rejected outcomes without turning every past event into a universal rule or carrying an entire conversation forever.
 
@@ -23,6 +23,14 @@ The engine combines:
 - **Progressive Vision Ensembles** with bounded micro-Visions, beam selection, splitting, merging, checkpoints, and backtracking;
 - loop guards that allow context-aware revisits but block circular exploration;
 - A*-style heuristic routing inside each allowed local subgraph;
+- a sourced, scoped, and versioned **Epistemic Core**;
+- bounded **Distributed Memory Attention** across goals, constraints, unknowns, experience, challenges, transitions, and risks;
+- many cheap attention-driven Views with hard truth and scope triage;
+- cross-View consensus, divergence, and coverage-gap extraction;
+- compact rejected-View traces with explicit revisit conditions;
+- continuous evidence-aware memory-link plasticity;
+- dynamic equilibrium bands, hysteresis, and exploration debt;
+- a retroactive learning loop that changes future attention, Views, links, capsules, and patterns;
 - selective memory reconstruction and compact preventive preflight context.
 
 ## Core idea
@@ -44,7 +52,13 @@ Admission and validation
     ↓
 Persistent capsule and recurring patterns
     ↓
+Epistemic Core and distributed attention
+    ↓
+Many cheap Views and cross-View triage
+    ↓
 Progressive micro-Visions and bounded beam
+    ↓
+Action, outcome, and retroactive plasticity
     ↓
 Vision-guided selective reconstruction
 ```
@@ -168,6 +182,78 @@ The beam keeps one defeasible dominant Vision and a small number of active or de
 
 `VisionCheckpointStore` and `backtrackProgressiveVision` restore an earlier frontier after a dead end instead of restarting from the memory root.
 
+## Epistemic Core
+
+Dynamic Views are constrained by a stable but versioned reference layer. An `EpistemicCore` distinguishes authoritative truths, verified results, supported claims, observations, inferences, hypotheses, disputes, refutations, and unknowns.
+
+```text
+sourced scoped truth
+    ↓ constrains
+attention and Views
+    ↓ may challenge with proportional evidence
+versioned supersession rather than history rewrite
+```
+
+A weak contradictory signal is recorded without automatically displacing an authoritative project source. A stronger, independent, and appropriately authoritative replacement can supersede it inside the same scope and validity interval.
+
+## Distributed Memory Attention
+
+A `MemoryAttentionField` maintains several bounded points of attention. Default roles cover:
+
+- goal;
+- constraint;
+- uncertainty;
+- experience;
+- challenge;
+- transition;
+- risk;
+- exploration.
+
+Redundant focuses merge before budget allocation. Pinned attention protects the initial need. Fast attention can appear after a contradiction, unexpected outcome, or context transition. Dormant attention can reactivate when the context returns.
+
+```text
+Memory and context
+    ↓
+Attention portfolio
+    ↓
+Many local Views
+    ↓
+Bounded progressive Vision seeds
+```
+
+## Cross-View triage
+
+The engine may generate many cheap Views. Incorrect Views are acceptable when they are explicitly hypothetical, receive small budgets, and produce reusable rejection reasons.
+
+Hard scope, forbidden effects, and truth conflicts run before ranking. Equivalent Views merge. The result exposes consensus, divergence, coverage gaps, one defeasible dominant View when justified, and active or deferred alternatives.
+
+A rejected View records why it failed and when it may be reconsidered. Rejection in one context never becomes universal falsehood.
+
+## Retroactive learning and plasticity
+
+After an action or prediction, the observed outcome is classified as supported, partially supported, contradicted, context-mismatched, scope-mismatched, truth-conflicting, missing evidence, superseded, redundant, or unresolved.
+
+The verdict then:
+
+- reinforces or challenges the attentions that generated the View;
+- creates contradiction attention when required;
+- updates affected memory links by independent evidence groups;
+- records compact rejection and revisit conditions;
+- proposes capsule reinforcement, narrowing, extension, splitting, or dispute;
+- invalidates or reconsiders dependent Views.
+
+```text
+Attention → Views → Action → Outcome
+    ↑                         ↓
+    └──── retroactive update ─┘
+```
+
+## Dynamic equilibrium
+
+The system does not seek one permanent optimum while a situation remains open. It maintains a moving equilibrium across fidelity, constraints, diversity, uncertainty, exploration depth and breadth, injection cost, stability, plasticity, and exploration debt.
+
+Control uses acceptable bands and hysteresis rather than one exact threshold. Corrections remain local and minimal: deepen, spawn an alternative, defer, backtrack, reactivate attention, reduce injection, request evidence, or freeze consolidation.
+
 ## Installation
 
 The repository and GitHub releases are public. npm distribution is not enabled yet, so the scoped package may return `404` until a dedicated publication workflow is completed.
@@ -216,7 +302,7 @@ This repository contains only:
 - public fixtures;
 - deterministic tests.
 
-Real transcripts, context frames, transitions, situations, accumulators, capsules, patterns, Visions, preferences, private repositories, paths, customer names, and project identifiers must be stored outside the public source tree.
+Real transcripts, truth anchors, context frames, transitions, situations, attention fields, attention Views, rejected-View traces, plastic links, equilibrium snapshots, accumulators, capsules, patterns, Visions, preferences, private repositories, paths, customer names, and project identifiers must be stored outside the public source tree.
 
 Recommended ignored paths:
 
@@ -230,6 +316,13 @@ Recommended ignored paths:
 *.vision.private.json
 *.vision-ensemble.private.json
 *.vision-checkpoint.private.json
+*.truth.private.json
+*.attention.private.json
+*.attention-view.private.json
+*.rejected-view.private.json
+*.plastic-link.private.json
+*.equilibrium.private.json
+*.retroaction.private.json
 *.capsule.private.json
 *.trace.private.json
 ```
@@ -255,11 +348,18 @@ src/
 ├── accumulation/    Progressive capsule accumulation
 ├── release/         Proof-based context release gates
 ├── reconstruction/  Selective memory reconstruction
+├── epistemic/       Scoped, versioned truth anchors and authority-proportional challenge
+├── attention/       Distributed attention fields, role coverage, decay, and reactivation
+├── views/           Attention-driven Views, cross-View triage, and rejected-View ledger
 ├── visions/         Static and progressive Visions, beam control, checkpoints, loop guards
 ├── routing/         Local A* routing, frontier cache and belief updates
+├── plasticity/      Evidence-aware link updates and capsule-refinement plans
+├── equilibrium/     Control bands, hysteresis, and exploration debt
+├── retroaction/     Outcome feedback into attention and memory
+├── orchestration/   End-to-end attention-driven memory cycles
 ├── preflight/       Minimal preventive context compilation
 ├── privacy/         Public-fixture boundary checks
-└── evaluation/      Retrieval, contamination and phase-intensity metrics
+└── evaluation/      Retrieval, attention, View, plasticity, and equilibrium metrics
 ```
 
 ## Invariants
@@ -282,17 +382,32 @@ src/
 16. Pruning a Vision never deletes the underlying memory.
 17. Revisiting memory requires new context, evidence, or measurable progress after the bounded allowance.
 18. Backtracking restores a checkpoint instead of replaying the entire graph.
+19. A View must explain which attention focuses produced it.
+20. Stable truth constrains Views, but remains scoped, sourced, and versioned.
+21. No authoritative truth is degraded without evidence proportional to its authority.
+22. Many cheap incorrect Views are acceptable when their rejection improves future triage.
+23. Rejection in one context never grants universal falsehood.
+24. Attention remains distributed but bounded, with minimum coverage for critical perspectives.
+25. Frequency never substitutes for independent evidence.
+26. Repetition may reinforce, narrow, extend, split, dispute, or supersede memory.
+27. Dynamic equilibrium uses bands and hysteresis to avoid fixation and oscillation.
+28. Every outcome must improve attention, links, applicability, or future View selection when a reusable signal exists.
 
 ## Status
 
-`v0.3.0` is released with Context Dynamics, Situational Memory, controlled context release, and selective reconstruction. The current development milestone adds the v0.4 Progressive Vision Routing and Evaluation foundation while the package version remains at `0.3.0` until a dedicated release PR.
+`v0.4.0` is released with Progressive Vision Routing and Evaluation. The current development milestone adds the v0.5 Attention-Driven Retroactive Memory foundation while the package version remains at `0.4.0` until a dedicated release PR.
 
 See:
 
 - [`docs/memory-v0.2-specification.md`](docs/memory-v0.2-specification.md)
 - [`docs/memory-v0.3-specification.md`](docs/memory-v0.3-specification.md)
 - [`docs/memory-v0.4-specification.md`](docs/memory-v0.4-specification.md)
+- [`docs/memory-v0.5-specification.md`](docs/memory-v0.5-specification.md)
 - [`docs/progressive-visions.md`](docs/progressive-visions.md)
+- [`docs/epistemic-core.md`](docs/epistemic-core.md)
+- [`docs/distributed-memory-attention.md`](docs/distributed-memory-attention.md)
+- [`docs/retroactive-learning-loop.md`](docs/retroactive-learning-loop.md)
+- [`docs/dynamic-equilibrium.md`](docs/dynamic-equilibrium.md)
 - [`docs/context-dynamics.md`](docs/context-dynamics.md)
 - [`docs/situational-memory.md`](docs/situational-memory.md)
 - [`docs/context-retention.md`](docs/context-retention.md)

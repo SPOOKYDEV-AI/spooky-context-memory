@@ -1,0 +1,10 @@
+{
+  "fixture": "epistemic-truth-challenge",
+  "context": "A weak hypothesis contradicts an authoritative project source, followed by an independent official replacement.",
+  "expected": {
+    "weakChallengeDisplacesTruth": false,
+    "recordContradiction": true,
+    "officialReplacementSupersedes": true,
+    "preserveValidityHistory": true
+  }
+}

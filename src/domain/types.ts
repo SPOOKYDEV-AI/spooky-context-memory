@@ -20,7 +20,15 @@ export type MemoryNodeType =
   | "reconstruction"
   | "vision"
   | "vision_ensemble"
-  | "vision_checkpoint";
+  | "vision_checkpoint"
+  | "truth_anchor"
+  | "attention_field"
+  | "attention_focus"
+  | "attention_view"
+  | "rejected_view_trace"
+  | "plastic_memory_link"
+  | "equilibrium_snapshot"
+  | "retroaction_event";
 
 export type MemoryNodeStatus =
   | "active"
@@ -50,7 +58,16 @@ export type MemoryLinkType =
   | "split_into"
   | "merged_into"
   | "checkpointed_at"
-  | "backtracked_to";
+  | "backtracked_to"
+  | "attends_to"
+  | "generates_view"
+  | "constrained_by_truth"
+  | "challenges"
+  | "rejected_as"
+  | "revisitable_when"
+  | "reinforces"
+  | "refines"
+  | "invalidates";
 
 export type SourceType =
   | "user"

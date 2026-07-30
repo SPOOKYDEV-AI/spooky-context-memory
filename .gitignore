@@ -18,3 +18,10 @@ coverage/
 *.reconstruction.private.json
 *.vision-ensemble.private.json
 *.vision-checkpoint.private.json
+*.truth.private.json
+*.attention.private.json
+*.attention-view.private.json
+*.rejected-view.private.json
+*.plastic-link.private.json
+*.equilibrium.private.json
+*.retroaction.private.json

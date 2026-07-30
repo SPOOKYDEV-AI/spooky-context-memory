@@ -1,0 +1,10 @@
+{
+  "fixture": "dynamic-memory-equilibrium",
+  "context": "The dominant View oscillates while a critical unknown remains uncovered and injection cost grows.",
+  "expected": {
+    "applyHysteresis": true,
+    "requestDiscriminatingEvidence": true,
+    "freezePrematureConsolidation": true,
+    "reduceInjectionWithoutDeletingMemory": true
+  }
+}

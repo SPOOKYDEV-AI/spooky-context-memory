@@ -1,0 +1,10 @@
+{
+  "fixture": "attention-redistribution-after-contradiction",
+  "context": "A historically strong pattern produces the wrong outcome in a new scoped situation.",
+  "expected": {
+    "challengeHistoricalFocus": true,
+    "createContradictionAttention": true,
+    "preserveUnderlyingPattern": true,
+    "regenerateDependentViews": true
+  }
+}
