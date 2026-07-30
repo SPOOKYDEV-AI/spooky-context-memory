@@ -4,3 +4,10 @@ coverage/
 .env
 *.log
 .DS_Store
+
+# Private runtime memory
+.context-memory/private/
+*.memory.db
+*.vision.private.json
+*.capsule.private.json
+*.trace.private.json

@@ -3,6 +3,7 @@ import type {
   MemoryScope,
   TaskSignature,
 } from "../domain/types.js";
+import type { MemoryClaim } from "../claims/types.js";
 
 export type ExecutionActor = "user" | "agent" | "tool" | "test";
 
@@ -71,7 +72,7 @@ export interface ExecutionTrace {
   startedAt: string;
   completedAt?: string;
   steps: ExecutionStep[];
-  rootCause: string;
+  rootCause: string | null;
   resolution: CapsuleResolution;
   applicability: CapsuleApplicability;
   validationEvidence: ValidationEvidence[];
@@ -99,11 +100,19 @@ export interface CapsuleDecisionRecord {
   timestamp: string;
 }
 
+export interface CapsuleUserApprovalScope {
+  outcomeAccepted: boolean;
+  reusableAsMemory: boolean;
+  rootCauseAccepted?: boolean;
+  applicabilityAccepted?: boolean;
+}
+
 export interface CapsuleUserApproval {
   approved: boolean;
   approvedBy: string;
   approvedAt: string;
   comment?: string;
+  scope?: CapsuleUserApprovalScope;
 }
 
 export type CapsuleStatus =
@@ -144,11 +153,12 @@ export interface ExperienceCapsule {
     failedAttempts: CapsuleAttemptRecord[];
     observedSymptoms: string[];
     rejectedHypotheses: CapsuleAttemptRecord[];
-    rootCause: string;
+    rootCause: string | null;
   };
 
   resolution: CapsuleResolution;
   applicability: CapsuleApplicability;
+  claims: MemoryClaim[];
 
   validation: {
     userApproval: CapsuleUserApproval | null;
@@ -189,6 +199,7 @@ export type CapsuleActivationFailureCode =
   | "CAPSULE_NOT_CANDIDATE"
   | "USER_APPROVAL_REQUIRED"
   | "USER_APPROVAL_METADATA_REQUIRED"
+  | "USER_OUTCOME_ACCEPTANCE_REQUIRED"
   | "PASSING_EVIDENCE_REQUIRED"
   | "FAILED_EVIDENCE_PRESENT";
 

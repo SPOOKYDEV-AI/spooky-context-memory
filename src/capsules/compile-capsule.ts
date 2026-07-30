@@ -100,12 +100,71 @@ function toErrorRecord(step: ExecutionStep): CapsuleErrorRecord {
   return record;
 }
 
+function buildInitialClaims(
+  trace: ExecutionTrace,
+  confidence: number,
+  createdBy: string,
+  createdAt: string,
+): ExperienceCapsule["claims"] {
+  const resolutionEvidence = trace.validationEvidence.map((evidence) => ({
+    evidenceId: evidence.id,
+    effect: evidence.passed ? ("supports" as const) : ("contradicts" as const),
+    weight:
+      evidence.type === "unit_test" || evidence.type === "integration_test"
+        ? 0.8
+        : 0.65,
+    independenceKey: evidence.sourceId ?? `${evidence.type}:${evidence.id}`,
+  }));
+  const hasPassingEvidence = trace.validationEvidence.some(
+    (evidence) => evidence.passed,
+  );
+  const claims: ExperienceCapsule["claims"] = [
+    {
+      id: `${buildCapsuleId(trace)}-claim-resolution`,
+      kind: "resolution",
+      statement: trace.resolution.description.trim(),
+      status: hasPassingEvidence ? "supported" : "unverified",
+      confidence,
+      assertedBy: createdBy,
+      assertedAt: createdAt,
+      derivedFromAttemptIds: trace.steps
+        .filter(
+          (step) => step.type === "resolution" || step.type === "validation",
+        )
+        .map((step) => step.id),
+      evidence: resolutionEvidence,
+    },
+  ];
+
+  if (trace.rootCause !== null) {
+    claims.unshift({
+      id: `${buildCapsuleId(trace)}-claim-root-cause`,
+      kind: "root_cause",
+      statement: trace.rootCause.trim(),
+      status: "unverified",
+      confidence: Math.min(0.49, confidence),
+      assertedBy: createdBy,
+      assertedAt: createdAt,
+      derivedFromAttemptIds: trace.steps
+        .filter(
+          (step) => step.type === "diagnosis" || step.type === "hypothesis",
+        )
+        .map((step) => step.id),
+      evidence: [],
+    });
+  }
+
+  return claims;
+}
+
 function validateTrace(trace: ExecutionTrace): void {
   requireNonEmpty(trace.id, "trace.id");
   requireNonEmpty(trace.task.intent, "trace.task.intent");
   requireNonEmpty(trace.task.target, "trace.task.target");
   requireNonEmpty(trace.task.expectedOutcome, "trace.task.expectedOutcome");
-  requireNonEmpty(trace.rootCause, "trace.rootCause");
+  if (trace.rootCause !== null) {
+    requireNonEmpty(trace.rootCause, "trace.rootCause");
+  }
   requireNonEmpty(trace.resolution.description, "trace.resolution.description");
   requireNonEmpty(trace.resolution.rationale, "trace.resolution.rationale");
 
@@ -132,6 +191,9 @@ export function compileCapsuleCandidate(
   validateTrace(trace);
   requireNonEmpty(options.createdBy, "options.createdBy");
 
+  const createdAt = options.createdAt ?? new Date().toISOString();
+  const createdBy = options.createdBy.trim();
+  const confidence = clampConfidence(options.confidence);
   const errors = trace.steps
     .filter((step) => step.type === "error")
     .map(toErrorRecord);
@@ -155,8 +217,8 @@ export function compileCapsuleCandidate(
     version: 1,
     origin: {
       traceId: trace.id,
-      createdAt: options.createdAt ?? new Date().toISOString(),
-      createdBy: options.createdBy.trim(),
+      createdAt,
+      createdBy,
     },
     initialNeed: {
       intent: trace.task.intent.trim(),
@@ -181,7 +243,7 @@ export function compileCapsuleCandidate(
         ...errors.map((error) => error.description),
       ]),
       rejectedHypotheses,
-      rootCause: trace.rootCause.trim(),
+      rootCause: trace.rootCause?.trim() ?? null,
     },
     resolution: {
       description: trace.resolution.description.trim(),
@@ -191,10 +253,11 @@ export function compileCapsuleCandidate(
       risks: uniqueStrings(trace.resolution.risks),
     },
     applicability: clonePlainData(trace.applicability),
+    claims: buildInitialClaims(trace, confidence, createdBy, createdAt),
     validation: {
       userApproval: null,
       evidence: clonePlainData(trace.validationEvidence),
-      confidence: clampConfidence(options.confidence),
+      confidence,
       requirements: {
         userApprovalRequired: true,
         passingEvidenceRequired: true,

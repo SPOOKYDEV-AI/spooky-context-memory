@@ -10,7 +10,7 @@ const incident: IncidentMemory = {
   originalTask: {
     intent: "uninstall_runtime",
     target: "runtime",
-    projectId: "asr",
+    projectId: "atlas",
     workflowId: "uninstall",
     expectedOutcome: "Remove zero, one, or many runtimes.",
     operations: ["discover", "remove"],
@@ -64,7 +64,7 @@ function makeTask(
   return {
     intent: "uninstall_runtime",
     target: "runtime",
-    projectId: "asr",
+    projectId: "atlas",
     workflowId: "uninstall",
     expectedOutcome: "Remove every runtime.",
     operations: ["discover", "remove"],

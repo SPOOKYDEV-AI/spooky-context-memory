@@ -1,0 +1,16 @@
+{
+  "scenarioId": "same-pattern-different-context",
+  "pattern": "loss_of_discriminating_constraint",
+  "episodes": [
+    {
+      "domain": "shape",
+      "rejected": "generic rectangle",
+      "accepted": "square with equal dimensions"
+    },
+    {
+      "domain": "workflow",
+      "rejected": "manual button with implicit start",
+      "accepted": "no execution without explicit action"
+    }
+  ]
+}

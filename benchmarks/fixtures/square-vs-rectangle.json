@@ -1,0 +1,20 @@
+{
+  "scenarioId": "square-vs-rectangle",
+  "request": {
+    "intent": "render_square",
+    "constraints": ["equal_dimensions"],
+    "forbiddenEffects": ["non_equal_dimensions"]
+  },
+  "attempts": [
+    {
+      "id": "rectangle",
+      "properties": { "width": 80, "height": 50, "fill": "red" },
+      "verdict": "rejected"
+    },
+    {
+      "id": "square",
+      "properties": { "width": 60, "height": 60, "fill": "red" },
+      "verdict": "accepted"
+    }
+  ]
+}

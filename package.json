@@ -1,7 +1,7 @@
 {
   "name": "@spooky-ai/context-memory",
   "version": "0.1.0",
-  "description": "Scope-aware hierarchical memory and incident retrieval for reliable AI coding agents.",
+  "description": "Scope-aware experiential memory, pattern recognition, Visions, and preventive retrieval for reliable AI agents.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -30,7 +30,12 @@
     "incident-management",
     "graph",
     "tree",
-    "typescript"
+    "typescript",
+    "experiential-memory",
+    "pattern-recognition",
+    "heuristic-search",
+    "a-star",
+    "context-engineering"
   ],
   "author": "François Bove",
   "license": "MIT",

@@ -2,72 +2,47 @@
 
 ## Research question
 
-Can hierarchical, task-scoped retrieval reduce irrelevant context and inappropriate reuse of historical fixes in AI coding agents?
+Can contextual capsules, recurring patterns, Visions, and preventive preflight reduce repeated agent errors without blocking valid solutions or inflating context?
 
-## Conditions
+## Compared systems
 
-### A. Global semantic retrieval
+1. global semantic retrieval;
+2. scope-limited semantic retrieval;
+3. hierarchical retrieval with typed links;
+4. capsules with applicability checks;
+5. patterns plus Vision pruning and A* routing;
+6. patterns plus Vision routing and compact preflight.
 
-Search all memory nodes and rank by semantic similarity.
+## Synthetic scenarios
 
-### B. Tree-scoped retrieval
+The public benchmark should include:
 
-Select project and workflow anchors, enforce path policies, then rank candidates.
-
-### C. Hybrid retrieval
-
-Use tree-scoped retrieval plus typed cross-links and incident applicability checks.
-
-## Benchmark tasks
-
-The initial benchmark should contain reproducible tasks across:
-
-- debugging;
-- feature implementation;
-- dependency upgrades;
-- database migrations;
-- authentication and authorization;
-- deployment configuration;
-- PowerShell and Windows automation;
-- React and TypeScript;
-- Python and FastAPI.
+- square requested, generic rectangle rejected;
+- manual workflow requested, implicit trigger rejected;
+- identical symptom with different causes;
+- identical causal pattern across several domains;
+- highly similar capsule in another project scope;
+- forbidden-effect branch with high semantic similarity;
+- active pattern with a counterexample;
+- no applicable memory, requiring explicit exploration.
 
 ## Metrics
 
-- task completion rate;
-- deterministic test success;
-- irrelevant-context rate;
-- wrong-fix reuse rate;
-- number of retrieved nodes;
-- input and output tokens;
-- model calls;
-- correction iterations;
-- execution time;
-- human interventions.
+- precision and recall of injected capsules;
+- wrong-fix reuse;
+- repeated-known-error rate;
+- context contamination;
+- false-pruning rate;
+- visited nodes;
+- injected capsule count;
+- estimated injected tokens;
+- attempts until accepted user outcome;
+- elapsed retrieval time.
 
-## Wrong-fix reuse
+## Safety criterion
 
-A wrong-fix reuse occurs when a historical resolution is applied despite at least one of the following:
+A reduction in visited nodes is not a success when it increases false pruning. Efficiency and correctness must be measured together.
 
-- different task objective;
-- incompatible project or workflow;
-- incompatible environment;
-- missing trigger condition;
-- active exclusion condition;
-- superseded resolution;
-- stale validation evidence.
+## Evidence independence
 
-## Reproducibility
-
-Every experiment should log:
-
-- repository commit;
-- task definition;
-- model and configuration;
-- memory snapshot;
-- selected anchors;
-- traversal policy;
-- retrieved node IDs and scores;
-- tool results;
-- final patch;
-- evaluation results.
+Repeated output from one run must share an independence key. Only the strongest item in a dependency group is used for confidence updates.

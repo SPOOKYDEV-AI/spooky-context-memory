@@ -8,17 +8,17 @@ const trace: ExecutionTrace = {
   id: "trace-runtime-uninstall",
   task: {
     intent: "uninstall_project_runtime",
-    target: "ASR runtime",
-    projectId: "asr",
+    target: "Atlas runtime",
+    projectId: "atlas",
     workflowId: "uninstall",
-    expectedOutcome: "Remove zero, one, or many ASR runtimes safely.",
+    expectedOutcome: "Remove zero, one, or many Atlas runtimes safely.",
     operations: ["discover_runtime", "remove_runtime"],
     constraints: ["powershell_5_1_compatible"],
     forbiddenEffects: ["remove_unrelated_runtime"],
     observedSymptoms: ["Count property is missing"],
   },
   scope: {
-    projectId: "asr",
+    projectId: "atlas",
     workflowId: "uninstall",
   },
   startedAt: "2026-07-30T10:00:00.000Z",
@@ -92,9 +92,13 @@ console.log(candidate.lifecycle.status); // candidate
 const active = activateCapsule(candidate, {
   approval: {
     approved: true,
-    approvedBy: "François",
+    approvedBy: "maintainer",
     approvedAt: "2026-07-30T10:30:00.000Z",
-    comment: "Validated against the original need and regression tests.",
+    comment: "The final result matches the requested outcome.",
+    scope: {
+      outcomeAccepted: true,
+      reusableAsMemory: true,
+    },
   },
 });
 
