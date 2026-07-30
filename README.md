@@ -13,6 +13,8 @@ It combines:
 - task-scoped retrieval;
 - provenance, confidence, freshness, and status metadata;
 - contextual incident memories;
+- deterministic experience-capsule compilation;
+- controlled activation requiring user approval and passing evidence;
 - explicit `appliesWhen` and `doesNotApplyWhen` conditions;
 - classification of historical incidents as applicable, diagnostic-only, or out of scope.
 
@@ -137,7 +139,8 @@ src/
 ├── storage/        # Storage adapters
 ├── traversal/      # BFS, DFS and best-first traversal
 ├── retrieval/      # Context cone, scoring and compilation
-└── incidents/      # Applicability and exclusion logic
+├── incidents/      # Applicability and exclusion logic
+└── capsules/       # Candidate compilation and controlled activation
 ```
 
 The storage contract is intentionally small. PostgreSQL, SQLite, Neo4j, document stores, and vector databases can be added without changing the domain model.
@@ -158,6 +161,35 @@ A historical incident is never automatically treated as a valid fix. It is class
 - `applicable`;
 - `diagnostic_reference`;
 - `out_of_scope`.
+
+## Experience capsules
+
+The Capsule Compiler converts a structured execution trace into a **candidate** memory capsule. It preserves the initial need, errors, failed attempts, root cause, resolution rationale, applicability boundaries, and validation evidence.
+
+```ts
+import {
+  activateCapsule,
+  compileCapsuleCandidate,
+  type ExecutionTrace,
+} from "@spooky-ai/context-memory";
+
+const candidate = compileCapsuleCandidate(trace, {
+  createdBy: "maintainer",
+  confidence: 0.9,
+});
+
+console.log(candidate.lifecycle.status); // candidate
+
+const active = activateCapsule(candidate, {
+  approval: {
+    approved: true,
+    approvedBy: "maintainer",
+    approvedAt: new Date().toISOString(),
+  },
+});
+```
+
+Compilation never activates a capsule. Activation is a separate, explicit operation that requires user approval and passing validation evidence. See [`docs/capsules.md`](docs/capsules.md) and [`examples/capsule-compiler.ts`](examples/capsule-compiler.ts).
 
 ## Research direction
 

@@ -8,3 +8,6 @@ export * from "./retrieval/scorer.js";
 export * from "./retrieval/retrieve-context.js";
 export * from "./incidents/condition-evaluator.js";
 export * from "./incidents/match-incident.js";
+export * from "./capsules/types.js";
+export * from "./capsules/compile-capsule.js";
+export * from "./capsules/activate-capsule.js";
