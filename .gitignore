@@ -25,3 +25,14 @@ coverage/
 *.plastic-link.private.json
 *.equilibrium.private.json
 *.retroaction.private.json
+*.understanding.private.json
+*.semantic-backbone.private.json
+*.cognitive-trajectory.private.json
+*.reflective-capsule.private.json
+*.cognitive-policy.private.json
+*.cognitive-habit.private.json
+*.habit-inhibition.private.json
+*.habit-recovery.private.json
+*.counterfactual-view.private.json
+*.unlearning.private.json
+*.relearning.private.json

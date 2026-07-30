@@ -12,83 +12,74 @@
 ## 0.2 — Experiential memory foundation — released
 
 - structured interaction episodes;
-- accepted, rejected, partial, and unknown outcomes;
 - contrast extraction and relational discriminators;
 - evidence-aware claims and unknown causes;
-- capsule compiler and controlled activation;
-- admission gate;
-- causal patterns and independent support;
-- Visions and deterministic branch pruning;
-- A*-style routing and deferred frontiers;
-- preventive Memory Preflight;
-- public/private runtime boundary.
+- capsule compiler, admission gate, and causal patterns;
+- Visions, local routing, Memory Preflight, and privacy boundary.
 
 ## 0.3 — Context Dynamics and Situational Memory — released
 
-- multiple progressively activated context frames;
-- context inertia, overlap, background, dormancy, and reactivation;
-- transition-path preservation;
-- context retention scoring independent of age;
-- protected Context Contracts;
-- phase handoffs across exploration, convergence, implementation, and validation;
-- progressive Capsule Accumulator;
-- proof-based Context Release Gate;
-- selective Memory Reconstruction;
-- incremental Vision updates;
-- context fidelity and phase-intensity metrics.
+- progressively activated context frames;
+- inertia, overlap, dormancy, and reactivation;
+- protected Context Contracts and phase handoffs;
+- Capsule Accumulator, release gate, and selective reconstruction.
 
 ## 0.4 — Progressive Vision Routing and Evaluation — released
 
-- bounded micro-Visions instead of one broad global view;
-- context-revision-aware revalidation and progressive staleness;
-- Vision splitting, equivalence merging, and dominance elimination;
-- bounded active and deferred beam;
-- checkpoints and branch-level backtracking;
-- loop detection based on context, state, evidence, and progress;
-- context-shift, false-pruning, contamination, and retrieval-cost metrics.
+- bounded micro-Visions;
+- context-aware revalidation;
+- splitting, merging, dominance elimination, checkpoints, backtracking, and loop detection.
 
-## 0.5 — Attention-Driven Retroactive Memory — current
+## 0.5 — Attention-Driven Retroactive Memory — released
 
-- sourced, scoped, versioned Epistemic Core;
-- bounded distributed Memory Attention Field;
-- persistent and fast attention;
-- role-diverse attention portfolios;
-- many cheap attention-driven Views;
-- hard truth, scope, and forbidden-effect triage;
-- consensus, divergence, and coverage-gap extraction;
-- compact rejected-View ledger with revisit conditions;
-- continuous evidence-aware link plasticity;
-- capsule reinforcement, narrowing, extension, splitting, and dispute plans;
-- dynamic equilibrium bands, hysteresis, and exploration debt;
-- retroactive outcome loop that changes future attention and Views;
-- attention, View, plasticity, and equilibrium metrics.
+- Epistemic Core;
+- distributed attention portfolios;
+- multi-View generation and triage;
+- rejected-View ledger;
+- continuous memory plasticity;
+- dynamic equilibrium;
+- retroactive outcome learning.
 
-## 0.6 — Persistence
+## 0.6 — Global Coherence, Reflective Learning, and Adaptive Unlearning — current
+
+- global-understanding models and alternatives;
+- semantic backbone;
+- local-versus-global revision gate;
+- cognitive trajectory recording;
+- separate outcome, prediction, cause, and efficiency analysis;
+- reflective capsules and contextual cognitive policies;
+- self-bias monitoring;
+- cognitive habits and adaptive confidence;
+- context-drift detection;
+- reversible inhibition, narrowing, weakening, quarantine, supersession, and reopening unknown;
+- counterfactual Views;
+- relearning plans and recovery registry;
+- end-to-end adaptive memory-evolution orchestration;
+- adaptive-memory metrics.
+
+## 0.7 — Persistence
 
 - SQLite adapter;
-- append-only context, attention, View, transition, situation, capsule, claim, pattern, truth, and equilibrium lifecycle journal;
+- append-only lifecycle journal;
 - deterministic snapshots;
-- JSONL import/export;
-- migrations;
-- retention and deletion policies;
-- optional encrypted private store.
+- JSONL import/export and migrations;
+- retention, deletion, and optional encrypted private storage;
+- selective persistence for temporary Views and cognitive trajectories.
 
-## 0.7 — Agent integrations
+## 0.8 — Agent integrations
 
-- provider-neutral context and attention compiler;
+- provider-neutral context compiler;
 - Council integration;
-- OpenAI Agents and Codex workflow examples;
+- OpenAI Agents and Codex examples;
 - LangGraph adapter;
-- runtime hooks for context signals, attention changes, View verdicts, and phase handoffs.
+- runtime hooks for context, attention, View verdicts, reflection, and unlearning.
 
-## 0.8 — Production safeguards
+## 0.9 — Production safeguards
 
-- contradiction and stale-context policies;
 - human correction workflows;
-- audit events;
-- private-data redaction;
-- equilibrium and release-gate observability;
-- false-memory, confirmation-bias, and self-reinforcement controls.
+- audit events and redaction;
+- observability for global revision, reflective bias, and unlearning;
+- adversarial false-memory and self-reinforcement tests.
 
 ## 1.0
 

@@ -1,6 +1,6 @@
 # Spooky Context Memory
 
-**Scope-aware experiential memory, distributed attention, and retroactive learning for reliable AI agents.**
+**Scope-aware experiential memory with global coherence, reflective learning, and adaptive unlearning for reliable AI agents.**
 
 Spooky Context Memory is a TypeScript library for agents that must learn from accepted and rejected outcomes without turning every past event into a universal rule or carrying an entire conversation forever.
 
@@ -31,6 +31,12 @@ The engine combines:
 - continuous evidence-aware memory-link plasticity;
 - dynamic equilibrium bands, hysteresis, and exploration debt;
 - a retroactive learning loop that changes future attention, Views, links, capsules, and patterns;
+- a slower **Global Understanding** layer that stabilizes meaning while local memory moves;
+- a semantic backbone and controlled global-revision gate;
+- **Reflective Learning** from grounded cognitive trajectories and successful View strategies;
+- self-bias detection for confirmation, inertia, contradiction neglect, and outcome-cause conflation;
+- **Adaptive Unlearning** that inhibits, narrows, weakens, quarantines, or supersedes habits without deleting history;
+- counterfactual Views, relearning plans, and explicit recovery conditions;
 - selective memory reconstruction and compact preventive preflight context.
 
 ## Core idea
@@ -59,6 +65,10 @@ Many cheap Views and cross-View triage
 Progressive micro-Visions and bounded beam
     ↓
 Action, outcome, and retroactive plasticity
+    ↓
+Reflective learning and adaptive unlearning
+    ↓
+Global-understanding revision gate
     ↓
 Vision-guided selective reconstruction
 ```
@@ -254,6 +264,52 @@ The system does not seek one permanent optimum while a situation remains open. I
 
 Control uses acceptable bands and hysteresis rather than one exact threshold. Corrections remain local and minimal: deepen, spawn an alternative, defer, backtrack, reactivate attention, reduce injection, request evidence, or freeze consolidation.
 
+## Global understanding and coherence
+
+A living memory is stable when local changes preserve a coherent understanding of the whole situation. `GlobalUnderstandingState` therefore moves more slowly than attention, Views, links, and capsules.
+
+```text
+Fast:    attention and temporary Views
+Medium:  links, capsules, and reflective policies
+Slow:    patterns, semantic backbone, and global understanding
+```
+
+One dominant global model and a small set of alternatives preserve identity, primary goal, invariants, truth anchors, core patterns, accepted claims, disputed claims, and unresolved questions. Local contradiction normally revises only the affected claim or backbone edge. Independent structural contradiction can challenge the dominant model or promote a better alternative through a controlled revision gate.
+
+## Reflective learning
+
+The engine can learn from its own grounded cognitive trajectories:
+
+```text
+attention distribution
+→ generated and rejected Views
+→ verification sequence
+→ selected action
+→ observed outcome
+→ contextual cognitive policy
+```
+
+Outcome fit, prediction fit, causal fit, and strategy efficiency remain separate. A successful action does not automatically validate its causal explanation. Mirror learning requires an observable result, test, source, user verdict, or another external grounding key.
+
+Repeated grounded trajectories can form reflective capsules that teach the system how to allocate attention, compose Views, choose breadth and depth, preserve contradictions, and limit injected memory.
+
+## Adaptive unlearning
+
+A successful strategy can become a cognitive habit. Habits retain historical support while tracking current applicability, predictive reliability, context drift, contradiction pressure, automaticity, and adaptability.
+
+Unlearning does not delete history. It may:
+
+- challenge an automatic path;
+- inhibit it in the current context;
+- narrow its scope;
+- weaken its operational authority;
+- quarantine it;
+- supersede it with a better habit;
+- reopen a claim as unknown;
+- coordinate contextual relearning.
+
+Counterfactual exploration keeps the habitual View as a control while generating habit-free, inverted-assumption, and truth-first alternatives. Recovery conditions allow inhibited habits to return as challenged options rather than immediate defaults.
+
 ## Installation
 
 The repository and GitHub releases are public. npm distribution is not enabled yet, so the scoped package may return `404` until a dedicated publication workflow is completed.
@@ -323,6 +379,17 @@ Recommended ignored paths:
 *.plastic-link.private.json
 *.equilibrium.private.json
 *.retroaction.private.json
+*.understanding.private.json
+*.semantic-backbone.private.json
+*.cognitive-trajectory.private.json
+*.reflective-capsule.private.json
+*.cognitive-policy.private.json
+*.cognitive-habit.private.json
+*.habit-inhibition.private.json
+*.habit-recovery.private.json
+*.counterfactual-view.private.json
+*.unlearning.private.json
+*.relearning.private.json
 *.capsule.private.json
 *.trace.private.json
 ```
@@ -356,10 +423,13 @@ src/
 ├── plasticity/      Evidence-aware link updates and capsule-refinement plans
 ├── equilibrium/     Control bands, hysteresis, and exploration debt
 ├── retroaction/     Outcome feedback into attention and memory
-├── orchestration/   End-to-end attention-driven memory cycles
+├── understanding/   Global models, semantic backbone, and revision pressure
+├── reflection/      Cognitive trajectories, reflective capsules, policies, and bias signals
+├── unlearning/      Habits, inhibition, counterfactual Views, recovery, and relearning
+├── orchestration/   Attention-driven and adaptive memory-evolution cycles
 ├── preflight/       Minimal preventive context compilation
 ├── privacy/         Public-fixture boundary checks
-└── evaluation/      Retrieval, attention, View, plasticity, and equilibrium metrics
+└── evaluation/      Retrieval, adaptive-memory, and equilibrium metrics
 ```
 
 ## Invariants
@@ -392,10 +462,22 @@ src/
 26. Repetition may reinforce, narrow, extend, split, dispute, or supersede memory.
 27. Dynamic equilibrium uses bands and hysteresis to avoid fixation and oscillation.
 28. Every outcome must improve attention, links, applicability, or future View selection when a reusable signal exists.
+29. Local memory may move continuously while global understanding changes only under proportional evidence.
+30. A successful outcome never proves a causal explanation by itself.
+31. Mirror learning requires external grounding and remains context-specific.
+32. Reflective policy may guide future search but cannot become authoritative world knowledge.
+33. Historical support and current applicability are separate quantities.
+34. A single failure cannot erase a mature habit.
+35. Inhibition precedes destructive unlearning whenever possible.
+36. Every reversible unlearning action stores explicit recovery conditions.
+37. Returning to unknown is valid when previous evidence no longer supports certainty.
+38. Counterfactual exploration preserves the habitual path as a control.
+39. Unlearning changes automatic influence, not historical truth.
+40. Global revisions preserve superseded models and their provenance.
 
 ## Status
 
-`v0.4.0` is released with Progressive Vision Routing and Evaluation. The current development milestone adds the v0.5 Attention-Driven Retroactive Memory foundation while the package version remains at `0.4.0` until a dedicated release PR.
+`v0.5.0` is released with Attention-Driven Retroactive Memory. The current development milestone adds the v0.6 Global Coherence, Reflective Learning, and Adaptive Unlearning foundation while the package version remains at `0.5.0` until a dedicated release PR.
 
 See:
 
@@ -403,6 +485,10 @@ See:
 - [`docs/memory-v0.3-specification.md`](docs/memory-v0.3-specification.md)
 - [`docs/memory-v0.4-specification.md`](docs/memory-v0.4-specification.md)
 - [`docs/memory-v0.5-specification.md`](docs/memory-v0.5-specification.md)
+- [`docs/memory-v0.6-specification.md`](docs/memory-v0.6-specification.md)
+- [`docs/global-understanding.md`](docs/global-understanding.md)
+- [`docs/reflective-learning.md`](docs/reflective-learning.md)
+- [`docs/adaptive-unlearning.md`](docs/adaptive-unlearning.md)
 - [`docs/progressive-visions.md`](docs/progressive-visions.md)
 - [`docs/epistemic-core.md`](docs/epistemic-core.md)
 - [`docs/distributed-memory-attention.md`](docs/distributed-memory-attention.md)

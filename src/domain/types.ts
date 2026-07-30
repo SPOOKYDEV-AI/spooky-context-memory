@@ -28,7 +28,19 @@ export type MemoryNodeType =
   | "rejected_view_trace"
   | "plastic_memory_link"
   | "equilibrium_snapshot"
-  | "retroaction_event";
+  | "retroaction_event"
+  | "global_understanding"
+  | "understanding_model"
+  | "semantic_backbone"
+  | "cognitive_trajectory"
+  | "reflective_capsule"
+  | "cognitive_policy"
+  | "cognitive_habit"
+  | "habit_inhibition"
+  | "habit_recovery"
+  | "counterfactual_view"
+  | "unlearning_event"
+  | "relearning_plan";
 
 export type MemoryNodeStatus =
   | "active"
@@ -67,7 +79,17 @@ export type MemoryLinkType =
   | "revisitable_when"
   | "reinforces"
   | "refines"
-  | "invalidates";
+  | "invalidates"
+  | "stabilizes"
+  | "revises"
+  | "reflects_on"
+  | "forms_habit"
+  | "inhibits"
+  | "reactivates"
+  | "learns_from_view"
+  | "constrained_by_understanding"
+  | "counterfactual_to"
+  | "transfers_into";
 
 export type SourceType =
   | "user"

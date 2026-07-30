@@ -14,7 +14,10 @@ export type AttentionTargetType =
   | "contradiction"
   | "risk"
   | "transition"
-  | "memory_node";
+  | "memory_node"
+  | "global_understanding"
+  | "reflective_capsule"
+  | "cognitive_habit";
 
 export type AttentionRole =
   | "goal"
@@ -24,7 +27,9 @@ export type AttentionRole =
   | "challenge"
   | "transition"
   | "risk"
-  | "exploration";
+  | "exploration"
+  | "reflection"
+  | "dehabituation";
 
 export type AttentionStatus =
   | "pinned"

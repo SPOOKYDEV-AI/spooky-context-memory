@@ -2,9 +2,7 @@
 
 ## Design objective
 
-Spooky Context Memory reuses past experience while preserving epistemic boundaries, contextual continuity, alternative interpretations, and retroactive learning.
-
-The complete pipeline is:
+Spooky Context Memory reuses past experience while preserving epistemic boundaries, contextual continuity, alternative interpretations, reflective learning, and reversible unlearning.
 
 ```text
 Conversation stream
@@ -14,21 +12,25 @@ Conversation stream
 → Capsule accumulation and admission
 → Capsule and pattern memory
 → Epistemic Core
+→ Global Understanding and semantic backbone
 → Distributed Memory Attention
 → Many cheap attention-driven Views
 → Cross-View triage
 → Progressive Vision ensemble
-→ Local heuristic retrieval and backtracking
+→ Local retrieval and backtracking
 → Selective reconstruction
 → Action or prediction
 → Outcome verdict
-→ Retroactive memory plasticity
-→ Dynamic equilibrium
+→ World learning and retroactive plasticity
+→ Reflective learning from the cognitive trajectory
+→ Habit monitoring and adaptive unlearning
+→ Global revision gate
+→ Next context cycle
 ```
 
 ## 1. Context Dynamics
 
-A `ContextField` contains several progressively activated frames rather than one global current context. Frames carry topic, intent, scope, activation, relevance, inertia, retention state, provenance, and protection reasons.
+A `ContextField` contains progressively activated frames with topic, intent, scope, activation, relevance, inertia, retention state, provenance, and protection reasons. Context is the key for applicability, learning, reflection, unlearning, and recovery.
 
 ## 2. Situational Memory
 
@@ -36,70 +38,64 @@ A `Situation` groups contexts serving one coherent objective. Its `ContextContra
 
 ## 3. Episodes, claims, capsules, and patterns
 
-Interaction episodes separate accepted, rejected, partial, and unknown outcomes. Contrast extraction proposes discriminators without inventing causes. Claims retain evidence and uncertainty. Capsules preserve scoped episodes; patterns preserve recurring mechanisms across independent contexts.
+Episodes separate accepted, rejected, partial, and unknown outcomes. Claims retain evidence and uncertainty. Capsules preserve scoped episodes; patterns preserve recurring mechanisms across independent contexts.
 
 ## 4. Context release and reconstruction
 
-The `ContextReleaseGate` requires proof of transfer before context leaves the active working set. Reconstruction combines only the current task, applicable memory, relevant dormant context, transition paths, and unresolved checks. Inspected memory remains separate from injected memory.
+The `ContextReleaseGate` requires proof of transfer before context leaves the active working set. Inspected memory remains separate from injected memory.
 
 ## 5. Epistemic Core
 
-The `EpistemicCore` stores truth anchors with source identifiers, state, confidence, scope, validity interval, revision, contradictions, and supersession.
+The `EpistemicCore` stores sourced, scoped, versioned truth anchors. Challenges must be proportional to authority. Supersession preserves history.
 
-Authority classes distinguish authoritative facts, verified results, supported claims, observations, inferences, hypotheses, disputes, refutations, and unknowns. Challenges must be proportional to authority.
+## 6. Global Understanding
 
-## 6. Distributed Memory Attention
+`GlobalUnderstandingState` contains one dominant model and optional alternatives. A model preserves identity, primary goal, current situation, invariants, truths, core patterns, claims, unresolved questions, and semantic-backbone edges.
 
-A `MemoryAttentionField` maintains bounded focuses for goals, constraints, uncertainty, experience, challenge, transition, risk, and exploration.
+The `Global Revision Gate` separates local revision from global replacement. Attention and Views may move rapidly; global understanding changes only after independent structural pressure or a clearly superior alternative model.
 
-The allocator merges redundant focuses, protects pinned focuses, guarantees configured role coverage, assigns budgets, decays stale attention, and reactivates attention after context or outcome changes.
+## 7. Distributed Memory Attention
 
-## 7. Attention-driven Views
+`MemoryAttentionField` maintains bounded focuses for goals, constraints, uncertainty, experience, challenge, transition, risk, exploration, reflection, and dehabituation.
 
-An `AttentionView` records:
+## 8. Attention-driven Views and triage
 
-- the focuses that produced it;
-- truth anchors and assumptions;
-- candidate branches;
-- questions covered;
-- conclusions;
-- expected cost and risk;
-- evidence and contextual revisions.
-
-Many candidate Views can be generated cheaply. Hard scope, forbidden-effect, and truth checks execute before ranking.
-
-## 8. Cross-View triage
-
-Triage merges redundant Views, qualifies rejected Views, preserves active and deferred alternatives, and emits:
-
-- consensus;
-- divergences;
-- coverage gaps;
-- one defeasible dominant View when justified;
-- compact rejected traces;
-- bounded progressive Vision seeds.
+Many cheap candidate Views can be generated. Hard scope, forbidden-effect, and truth checks execute before ranking. Triage exposes consensus, divergence, coverage gaps, rejected traces, and progressive Vision seeds.
 
 ## 9. Progressive Vision routing
 
-The `ProgressiveVisionEnsemble` explores selected local hypotheses with bounded beams, splitting, merging, checkpoints, loop guards, and backtracking. Pruning a Vision never deletes memory.
+The `ProgressiveVisionEnsemble` explores selected local hypotheses with bounded beams, splitting, merging, checkpoints, loop guards, and backtracking. Pruning never deletes memory.
 
-## 10. Retroactive learning
+## 10. World learning and retroaction
 
-An observed outcome produces a qualified View verdict. The retroactive loop then:
+Observed outcomes update attentions, rejected-View traces, plastic links, capsule-refinement plans, and dependent View validity.
 
-- reinforces or challenges the attentions that generated the View;
-- creates contradiction attention when necessary;
-- records compact rejection and revisit conditions;
-- updates only affected plastic links;
-- proposes capsule reinforcement, narrowing, extension, splitting, or dispute;
-- invalidates or reconsiders dependent Views.
+## 11. Reflective Memory Engine
 
-## 11. Dynamic equilibrium
+`CognitiveTrajectory` records how attention, Views, verification, action, and outcome interacted. `ViewSuccessAnalysis` separates outcome, prediction, cause, and efficiency.
 
-The controller monitors fidelity, constraint coverage, attention diversity, View diversity, challenge coverage, uncertainty coverage, exploration breadth and depth, injection efficiency, stability, plasticity, and exploration debt.
+Grounded repeated trajectories form `ReflectiveCapsule` objects and contextual `CognitivePolicyProfile` objects. The self-bias monitor detects experience overuse, contradiction neglect, dominant-View inertia, confirmation bias, novelty neglect, outcome-cause conflation, and over-injection.
 
-Bands and hysteresis prevent overreaction. Corrections are minimal and local.
+## 12. Adaptive Unlearning
 
-## 12. Storage boundary
+`CognitiveHabit` tracks historical support separately from current applicability. The engine evaluates context drift, independent failures, truth supersession, overactivation, and superior strategies.
 
-The semantic model remains storage-neutral. Public code contains deterministic algorithms and synthetic fixtures only. Real contexts, truths, attentions, Views, traces, links, capsules, patterns, and equilibrium snapshots belong in private runtime storage.
+Unlearning may challenge, inhibit, narrow, weaken, quarantine, supersede, reopen unknown, or coordinate relearning. Counterfactual Views preserve the habitual path as a control. Recovery conditions make inhibition reversible.
+
+## 13. Dynamic equilibrium
+
+The controller monitors fidelity, constraint coverage, attention and View diversity, challenge coverage, uncertainty, exploration breadth and depth, injection efficiency, stability, plasticity, and exploration debt.
+
+## 14. Adaptive evolution cycle
+
+`completeAdaptiveMemoryEvolution` composes:
+
+1. retroactive world learning;
+2. reflective trajectory learning;
+3. contextual habit evaluation and unlearning;
+4. global-understanding revision;
+5. bounded guidance for the next context cycle.
+
+## 15. Storage boundary
+
+The semantic model remains storage-neutral. Public code contains deterministic algorithms and synthetic fixtures only. Real contexts, truths, Views, cognitive trajectories, habits, and recovery records belong in private runtime storage.

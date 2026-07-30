@@ -21,7 +21,7 @@ The repository is public. Runtime memory is not.
 - customer or employer identifiers;
 - private repository content;
 - API keys, tokens, credentials, or personal data;
-- real truth anchors, attention fields, attention focuses, Views, rejected-View traces, plastic links, equilibrium snapshots, capsules, patterns, reconstructions, Vision ensembles, or checkpoints.
+- real truth anchors, global-understanding models, semantic backbones, attention fields, attention focuses, Views, rejected-View traces, cognitive trajectories, reflective capsules, cognitive policies, habits, inhibition records, recovery conditions, relearning plans, plastic links, equilibrium snapshots, capsules, patterns, reconstructions, Vision ensembles, or checkpoints.
 
 ## Runtime layout
 
@@ -30,6 +30,8 @@ A private integration may use:
 ```text
 .context-memory/private/
 ├── truths/
+├── understanding/
+├── semantic-backbone/
 ├── contexts/
 ├── transitions/
 ├── situations/
@@ -38,6 +40,13 @@ A private integration may use:
 ├── rejected-views/
 ├── plastic-links/
 ├── equilibrium/
+├── cognitive-trajectories/
+├── reflective-capsules/
+├── cognitive-policies/
+├── habits/
+├── inhibitions/
+├── recovery/
+├── relearning/
 ├── accumulators/
 ├── traces/
 ├── capsules/
