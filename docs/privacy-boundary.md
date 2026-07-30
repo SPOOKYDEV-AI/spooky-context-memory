@@ -21,7 +21,7 @@ The repository is public. Runtime memory is not.
 - customer or employer identifiers;
 - private repository content;
 - API keys, tokens, credentials, or personal data;
-- real capsules, patterns, reconstructed memories, or Visions.
+- real capsules, patterns, reconstructed memories, Visions, Vision ensembles, or checkpoints.
 
 ## Runtime layout
 
@@ -37,6 +37,8 @@ A private integration may use:
 ├── capsules/
 ├── patterns/
 ├── visions/
+├── vision-ensembles/
+├── vision-checkpoints/
 ├── reconstructions/
 └── memory.db
 ```

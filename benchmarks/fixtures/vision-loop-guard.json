@@ -1,0 +1,9 @@
+{
+  "fixture": "vision-loop-guard",
+  "context": "The same Vision, node, questions, constraints, evidence, and progress recur in one context revision.",
+  "expected": {
+    "boundedRevisit": true,
+    "eventualBlock": true,
+    "allowAfterContextOrEvidenceChange": true
+  }
+}

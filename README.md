@@ -20,7 +20,9 @@ The engine combines:
 - context release gates based on verified transfer, not age;
 - **Visions** that prune impossible branches before graph search;
 - incremental Vision updates instead of global rescoring;
-- A*-style heuristic routing inside the allowed subgraph;
+- **Progressive Vision Ensembles** with bounded micro-Visions, beam selection, splitting, merging, checkpoints, and backtracking;
+- loop guards that allow context-aware revisits but block circular exploration;
+- A*-style heuristic routing inside each allowed local subgraph;
 - selective memory reconstruction and compact preventive preflight context.
 
 ## Core idea
@@ -41,6 +43,8 @@ Capsule accumulator
 Admission and validation
     ↓
 Persistent capsule and recurring patterns
+    ↓
+Progressive micro-Visions and bounded beam
     ↓
 Vision-guided selective reconstruction
 ```
@@ -136,11 +140,37 @@ Compact reconstructed memory
 
 The agent receives only what must influence the present action. Raw transcripts are not injected by default.
 
+## Progressive Vision Ensemble
+
+One broad Vision can preserve a stale interpretation for too long. The progressive router therefore creates several short-lived micro-Visions, each representing one local search hypothesis.
+
+```text
+Context delta
+    ↓
+Revalidate existing micro-Visions
+    ↓
+Prune invalid or stale hypotheses
+    ↓
+Spawn, split, or merge Visions
+    ↓
+Explore a bounded active beam
+    ↓
+Checkpoint before deeper traversal
+    ↓
+Backtrack, defer, supersede, or deepen
+```
+
+A micro-Vision records its context revision, context anchors, branch set, evidence, unresolved questions, visited nodes, frontier nodes, injected items, score, lifecycle state, and local budget.
+
+The beam keeps one defeasible dominant Vision and a small number of active or deferred alternatives. Equivalent Visions merge. Broad Visions split into smaller branch groups. Dominated, contradicted, context-stale, or exhausted Visions leave the active beam without deleting the underlying memory.
+
+`VisionLoopGuard` blocks repeated states when context, evidence, unresolved questions, constraints, and progress have not changed. Revisiting after a real context or evidence change remains allowed.
+
+`VisionCheckpointStore` and `backtrackProgressiveVision` restore an earlier frontier after a dead end instead of restarting from the memory root.
+
 ## Installation
 
-```bash
-npm install @spooky-ai/context-memory
-```
+The repository and GitHub releases are public. npm distribution is not enabled yet, so the scoped package may return `404` until a dedicated publication workflow is completed.
 
 For local development:
 
@@ -198,6 +228,8 @@ Recommended ignored paths:
 *.situation.private.json
 *.accumulator.private.json
 *.vision.private.json
+*.vision-ensemble.private.json
+*.vision-checkpoint.private.json
 *.capsule.private.json
 *.trace.private.json
 ```
@@ -223,8 +255,8 @@ src/
 ├── accumulation/    Progressive capsule accumulation
 ├── release/         Proof-based context release gates
 ├── reconstruction/  Selective memory reconstruction
-├── visions/         Contextual subgraph plans and incremental updates
-├── routing/         A* routing, frontier cache and belief updates
+├── visions/         Static and progressive Visions, beam control, checkpoints, loop guards
+├── routing/         Local A* routing, frontier cache and belief updates
 ├── preflight/       Minimal preventive context compilation
 ├── privacy/         Public-fixture boundary checks
 └── evaluation/      Retrieval, contamination and phase-intensity metrics
@@ -246,15 +278,21 @@ src/
 12. A stored capsule is not the same thing as a reconstructed memory.
 13. Private runtime data never belongs in the public repository.
 14. Persistence must not freeze an unstable semantic model.
+15. A dominant Vision is a search hypothesis, not authoritative memory.
+16. Pruning a Vision never deletes the underlying memory.
+17. Revisiting memory requires new context, evidence, or measurable progress after the bounded allowance.
+18. Backtracking restores a checkpoint instead of replaying the entire graph.
 
 ## Status
 
-`v0.2.0` provides experiential capsules, patterns, Visions, heuristic routing, and preventive preflight. The current development milestone adds the `v0.3` Context Dynamics and Situational Memory foundation without yet publishing a `v0.3.0` package release.
+`v0.3.0` is released with Context Dynamics, Situational Memory, controlled context release, and selective reconstruction. The current development milestone adds the v0.4 Progressive Vision Routing and Evaluation foundation while the package version remains at `0.3.0` until a dedicated release PR.
 
 See:
 
 - [`docs/memory-v0.2-specification.md`](docs/memory-v0.2-specification.md)
 - [`docs/memory-v0.3-specification.md`](docs/memory-v0.3-specification.md)
+- [`docs/memory-v0.4-specification.md`](docs/memory-v0.4-specification.md)
+- [`docs/progressive-visions.md`](docs/progressive-visions.md)
 - [`docs/context-dynamics.md`](docs/context-dynamics.md)
 - [`docs/situational-memory.md`](docs/situational-memory.md)
 - [`docs/context-retention.md`](docs/context-retention.md)

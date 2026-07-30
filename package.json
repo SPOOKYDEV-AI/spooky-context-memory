@@ -1,7 +1,7 @@
 {
   "name": "@spooky-ai/context-memory",
   "version": "0.3.0",
-  "description": "Scope-aware experiential memory, pattern recognition, Visions, and preventive retrieval for reliable AI agents.",
+  "description": "Scope-aware experiential memory, context dynamics, and progressive Vision routing for reliable AI agents.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -39,7 +39,11 @@
     "context-dynamics",
     "situational-memory",
     "context-retention",
-    "memory-reconstruction"
+    "memory-reconstruction",
+    "progressive-visions",
+    "beam-search",
+    "backtracking",
+    "loop-detection"
   ],
   "author": "François Bove",
   "license": "MIT",

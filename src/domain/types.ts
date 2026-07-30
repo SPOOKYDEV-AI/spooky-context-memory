@@ -17,7 +17,10 @@ export type MemoryNodeType =
   | "transition"
   | "situation"
   | "accumulator"
-  | "reconstruction";
+  | "reconstruction"
+  | "vision"
+  | "vision_ensemble"
+  | "vision_checkpoint";
 
 export type MemoryNodeStatus =
   | "active"
@@ -43,7 +46,11 @@ export type MemoryLinkType =
   | "reactivated_by"
   | "belongs_to_situation"
   | "accumulated_into"
-  | "reconstructed_from";
+  | "reconstructed_from"
+  | "split_into"
+  | "merged_into"
+  | "checkpointed_at"
+  | "backtracked_to";
 
 export type SourceType =
   | "user"
