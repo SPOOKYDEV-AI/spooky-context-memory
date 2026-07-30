@@ -12,13 +12,16 @@ The repository is public. Runtime memory is not.
 
 ## Forbidden in the repository
 
-- real interaction traces;
+- real interaction transcripts;
+- real context frames or transition paths;
+- real situations or phase handoffs;
+- capsule accumulators built from user conversations;
 - real user preferences or validation history;
 - production paths and hostnames;
 - customer or employer identifiers;
 - private repository content;
 - API keys, tokens, credentials, or personal data;
-- real capsules, patterns, or Visions.
+- real capsules, patterns, reconstructed memories, or Visions.
 
 ## Runtime layout
 
@@ -26,10 +29,15 @@ A private integration may use:
 
 ```text
 .context-memory/private/
+├── contexts/
+├── transitions/
+├── situations/
+├── accumulators/
 ├── traces/
 ├── capsules/
 ├── patterns/
 ├── visions/
+├── reconstructions/
 └── memory.db
 ```
 

@@ -1,0 +1,28 @@
+{
+  "scenario": "phase-context-fidelity",
+  "baselineCharacters": 7200,
+  "phases": [
+    {
+      "phase": "exploration",
+      "characters": 6200,
+      "preservedInvariants": 6,
+      "missingInvariants": 0
+    },
+    {
+      "phase": "implementation",
+      "characters": 2100,
+      "preservedInvariants": 6,
+      "missingInvariants": 0
+    },
+    {
+      "phase": "validation",
+      "characters": 900,
+      "preservedInvariants": 6,
+      "missingInvariants": 0
+    }
+  ],
+  "expected": {
+    "fidelityDoesNotDecrease": true,
+    "contextDensityIncreases": true
+  }
+}

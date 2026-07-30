@@ -46,3 +46,18 @@ A reduction in visited nodes is not a success when it increases false pruning. E
 ## Evidence independence
 
 Repeated output from one run must share an independence key. Only the strongest item in a dependency group is used for confidence updates.
+
+## Context Dynamics evaluation
+
+The v0.3 research protocol adds:
+
+- premature context-drop rate;
+- context-bleed rate;
+- transition-loss rate;
+- invariant fidelity across phases;
+- compaction ratio;
+- information density;
+- reconstructed-memory size versus transcript replay;
+- false release decisions.
+
+A system is not considered more efficient merely because it injects fewer characters. It must preserve the initial need and all discriminating constraints through validation.

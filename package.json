@@ -35,7 +35,11 @@
     "pattern-recognition",
     "heuristic-search",
     "a-star",
-    "context-engineering"
+    "context-engineering",
+    "context-dynamics",
+    "situational-memory",
+    "context-retention",
+    "memory-reconstruction"
   ],
   "author": "François Bove",
   "license": "MIT",

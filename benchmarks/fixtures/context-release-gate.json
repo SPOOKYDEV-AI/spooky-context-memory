@@ -1,0 +1,15 @@
+{
+  "scenario": "proof-based-context-release",
+  "targetState": "dormant",
+  "blockedWithout": [
+    "initial need transfer",
+    "constraint transfer",
+    "provenance",
+    "uncertainty preservation"
+  ],
+  "expected": {
+    "ageAloneAllowsRelease": false,
+    "verifiedTransferAllowsRelease": true,
+    "deletionRequiresCapsule": true
+  }
+}

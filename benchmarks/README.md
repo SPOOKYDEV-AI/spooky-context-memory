@@ -1,11 +1,16 @@
-# Public Benchmark Fixtures
+# Benchmarks
 
-This directory contains only synthetic scenarios.
+All benchmark fixtures are synthetic and public-safe.
 
-The benchmark compares global retrieval, scoped retrieval, and Vision-based routing. Fixtures must pass the repository public-data policy before publication.
+Current fixtures cover:
 
-Current fixtures:
+- subtype discrimination;
+- forbidden branch pruning;
+- the same causal pattern across different contexts;
+- progressive context shifts without premature deletion;
+- invariant fidelity across compressed phases;
+- proof-based context release.
 
-- `square-vs-rectangle.json`: accepted/rejected outcome contrast;
-- `forbidden-branch.json`: a highly similar but forbidden branch;
-- `same-pattern-different-context.json`: one causal mechanism across two artificial domains.
+The next runner compares transcript replay, static summary, v0.2 Vision retrieval, and v0.3 Context Dynamics plus selective reconstruction.
+
+Target metrics include context bleed, premature drop, transition loss, false pruning, invariant fidelity, visited nodes, injected characters, and time to accepted outcome.

@@ -36,3 +36,11 @@
 - [ ] same causal pattern across different artificial scopes;
 - [ ] unknown case with no applicable memory;
 - [ ] active pattern with a counterexample.
+
+## Context Dynamics privacy checks
+
+- [ ] No real context frames are present.
+- [ ] No real transition bridges or reconstructed conversation paths are present.
+- [ ] No situations, phase handoffs, or accumulators were exported from runtime.
+- [ ] New fixtures use only synthetic Atlas/Aurora identifiers.
+- [ ] Private context, situation, accumulator, and reconstruction file patterns remain ignored.

@@ -57,3 +57,9 @@ A capsule does not:
 - replace pattern detection;
 - force the complete episode into model context;
 - contain private data in public fixtures.
+
+## Progressive accumulation before compilation
+
+The v0.3 `CapsuleAccumulator` collects reusable deposits while a situation is still unfolding. It preserves the initial need, observations, rejected trajectories, accepted decisions, claims, evidence, source contexts, and transition lineage.
+
+An accumulator becoming `ready` does not activate memory. It only means the material is complete and stable enough to be sealed and passed to the existing admission and capsule lifecycle.

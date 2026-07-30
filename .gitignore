@@ -11,3 +11,8 @@ coverage/
 *.vision.private.json
 *.capsule.private.json
 *.trace.private.json
+*.context.private.json
+*.transition.private.json
+*.situation.private.json
+*.accumulator.private.json
+*.reconstruction.private.json
