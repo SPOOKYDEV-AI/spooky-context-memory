@@ -23,7 +23,7 @@
 - preventive Memory Preflight;
 - public/private runtime boundary.
 
-## 0.3 — Context Dynamics and Situational Memory — current
+## 0.3 — Context Dynamics and Situational Memory — released
 
 - multiple progressively activated context frames;
 - context inertia, overlap, background, dormancy, and reactivation;
@@ -37,16 +37,20 @@
 - incremental Vision updates;
 - context fidelity and phase-intensity metrics.
 
-## 0.4 — Evaluation hardening
+## 0.4 — Progressive Vision Routing and Evaluation — development
 
+- bounded micro-Visions instead of one broad global view;
+- context-revision-aware revalidation and progressive staleness;
+- Vision splitting, equivalence merging, and dominance elimination;
+- bounded active and deferred beam;
+- checkpoints and branch-level backtracking;
+- loop detection based on context, state, evidence, and progress;
 - context-shift benchmark;
-- premature-drop rate;
-- context-bleed rate;
-- transition-loss rate;
-- wrong-fix reuse rate;
+- premature-drop and context-bleed rates;
+- transition-loss and wrong-fix reuse rates;
 - false-pruning rate;
-- invariant-fidelity by phase;
-- visited-node and injected-token cost;
+- selection precision and recall;
+- visited-node and injected-item cost;
 - reconstruction quality versus transcript replay.
 
 ## 0.5 — Persistence

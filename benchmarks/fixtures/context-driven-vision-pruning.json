@@ -1,0 +1,9 @@
+{
+  "fixture": "context-driven-vision-pruning",
+  "context": "A micro-Vision remains anchored only to a dormant context across more revisions than policy allows.",
+  "expected": {
+    "underlyingMemoryDeleted": false,
+    "visionPruned": true,
+    "newContextCanSpawnNewVision": true
+  }
+}

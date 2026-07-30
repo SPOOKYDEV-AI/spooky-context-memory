@@ -14,8 +14,8 @@ Conversation stream
 → Capsule accumulation and admission
 → Capsule and pattern memory
 → Context release
-→ Vision resolution and incremental updates
-→ Heuristic retrieval
+→ Progressive Vision ensemble
+→ Local heuristic retrieval and backtracking
 → Selective reconstruction
 → Preventive preflight
 ```
@@ -103,11 +103,29 @@ A Vision is a contextual search plan containing anchors, allowed branches, deter
 
 `updateMemoryVision` reevaluates only affected branches while preserving unaffected routing work. Context frame identifiers can become anchors without rescoring every branch.
 
-## 10. Heuristic routing
+## 10. Progressive Vision routing
+
+One broad Vision is no longer required to carry the complete search interpretation. A `ProgressiveVisionEnsemble` maintains several bounded micro-Visions tied to the current context revision.
+
+The manager can:
+
+- spawn new hypotheses;
+- split broad branch sets;
+- merge equivalent Visions;
+- supersede dominated Visions;
+- prune contradicted or context-stale Visions;
+- retain one dominant and several alternative Visions;
+- emit checkpoints before deeper exploration;
+- backtrack to a previous frontier;
+- block circular states without new progress.
+
+A dominant Vision receives more budget but remains defeasible.
+
+## 11. Heuristic routing
 
 The A*-style router explores only the Vision-approved subgraph. Hard exclusions execute before heuristic scoring. Deferred frontiers can be cached.
 
-## 11. Selective reconstruction
+## 12. Selective reconstruction
 
 A persistent capsule is stored evidence. A remembered context is a new reconstruction for the present task.
 
@@ -122,7 +140,7 @@ The reconstructor combines:
 
 The output is bounded and excludes raw transcript by default.
 
-## 12. Context efficiency
+## 13. Context efficiency
 
 Performance is measured by more than token reduction. Phase metrics include:
 
@@ -133,6 +151,6 @@ Performance is measured by more than token reduction. Phase metrics include:
 
 The goal is stable task fidelity with progressively denser context.
 
-## 13. Storage boundary
+## 14. Storage boundary
 
 Persistent adapters remain a later milestone. Public code contains algorithms and synthetic fixtures only. Real contexts, transitions, situations, accumulators, capsules, patterns, and Visions belong in private runtime storage.

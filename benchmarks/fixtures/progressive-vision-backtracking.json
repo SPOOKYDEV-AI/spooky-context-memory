@@ -1,0 +1,9 @@
+{
+  "fixture": "progressive-vision-backtracking",
+  "context": "A dominant branch reaches a dead end while an earlier checkpoint retains another frontier.",
+  "expected": {
+    "restartFromRoot": false,
+    "restoreCheckpoint": true,
+    "preserveAlternativeFrontier": true
+  }
+}

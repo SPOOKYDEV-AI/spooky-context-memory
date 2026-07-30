@@ -16,3 +16,5 @@ coverage/
 *.situation.private.json
 *.accumulator.private.json
 *.reconstruction.private.json
+*.vision-ensemble.private.json
+*.vision-checkpoint.private.json

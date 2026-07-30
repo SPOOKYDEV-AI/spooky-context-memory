@@ -63,3 +63,23 @@ This public project provides only generic Vision contracts and synthetic example
 A context shift should not force a full Vision rebuild. `updateMemoryVision` reevaluates only caller-supplied affected branches, preserves unaffected frontiers and exclusions, and adds high-activation context frames as anchors.
 
 The caller remains responsible for identifying affected branches. The public engine never infers authorization from semantic similarity alone.
+
+## Progressive Vision Ensemble
+
+A single Vision remains useful as a deterministic branch plan, but it should not become the only interpretation of a changing situation. The Progressive Vision Ensemble creates several small Visions, each representing one local search hypothesis.
+
+```text
+one changing situation
+→ several bounded micro-Visions
+→ short local exploration
+→ contextual revalidation
+→ prune, split, merge, defer, or deepen
+```
+
+Each micro-Vision keeps its own context revision, anchors, branch set, unresolved questions, evidence, traversal cost, frontier nodes, checkpoints, and lifecycle state.
+
+The beam controller keeps a bounded active set with one defeasible dominant Vision and a small number of alternatives. Equivalent or dominated Visions are superseded. Context-stale or contradicted Visions are pruned without deleting their underlying memory.
+
+Checkpoints allow the search to return to a prior frontier after a dead end. `VisionLoopGuard` blocks repeated exploration states unless context, evidence, or measurable progress changed.
+
+See [`progressive-visions.md`](progressive-visions.md) and [`memory-v0.4-specification.md`](memory-v0.4-specification.md).
