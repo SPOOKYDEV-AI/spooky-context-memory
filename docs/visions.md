@@ -83,3 +83,19 @@ The beam controller keeps a bounded active set with one defeasible dominant Visi
 Checkpoints allow the search to return to a prior frontier after a dead end. `VisionLoopGuard` blocks repeated exploration states unless context, evidence, or measurable progress changed.
 
 See [`progressive-visions.md`](progressive-visions.md) and [`memory-v0.4-specification.md`](memory-v0.4-specification.md).
+
+## Attention Views versus Memory Visions
+
+An `AttentionView` is a cheap interpretation generated from one or more attention focuses. It can be structurally ineligible, contradicted, redundant, or unresolved before receiving graph-search budget.
+
+A `MemoryVision` or `ProgressiveVision` is a bounded search plan created only after View triage.
+
+```text
+Attention focuses
+→ many cheap Attention Views
+→ truth, scope, and contradiction triage
+→ bounded Progressive Vision seeds
+→ graph exploration
+```
+
+This separation allows the engine to learn from incorrect interpretations without spending a full traversal budget on each one.

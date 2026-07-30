@@ -1,0 +1,10 @@
+{
+  "fixture": "rejected-view-learning",
+  "context": "Several cheap Views are wrong for different qualified reasons.",
+  "expected": {
+    "storeFullViewsAsActiveMemory": false,
+    "retainCompactDiscriminators": true,
+    "blockSameContextReplay": true,
+    "allowExplicitRevisit": true
+  }
+}

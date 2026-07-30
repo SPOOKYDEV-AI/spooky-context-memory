@@ -44,3 +44,16 @@
 - [ ] No situations, phase handoffs, or accumulators were exported from runtime.
 - [ ] New fixtures use only synthetic Atlas/Aurora identifiers.
 - [ ] Private context, situation, accumulator, and reconstruction file patterns remain ignored.
+
+## Attention and retroaction checks
+
+- [ ] No real truth anchors, attention fields, attention Views, rejected-View traces, plastic links, or equilibrium snapshots are present.
+- [ ] Every public View, attention, truth, and outcome fixture uses synthetic identifiers.
+- [ ] Truth challenges are proportional to source authority and preserve supersession history.
+- [ ] Goal, constraint, uncertainty, and experiential attention coverage is tested.
+- [ ] Hard truth, scope, and forbidden-effect triage runs before View ranking.
+- [ ] Rejected Views retain qualified reasons and explicit revisit conditions.
+- [ ] Repeated evidence uses independence keys before link or capsule reinforcement.
+- [ ] Dynamic equilibrium uses bands and hysteresis rather than one unstable threshold.
+- [ ] Critical exploration debt blocks premature consolidation.
+- [ ] Retroactive outcomes update only affected attention, links, capsules, and Views.
