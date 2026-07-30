@@ -480,6 +480,8 @@ export function getAttentionRoleCoverage(
     transition: 0,
     risk: 0,
     exploration: 0,
+    reflection: 0,
+    dehabituation: 0,
   };
   for (const focus of field.focuses) {
     if (["pinned", "dominant", "active"].includes(focus.status)) {
