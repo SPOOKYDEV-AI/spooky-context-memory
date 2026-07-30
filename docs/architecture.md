@@ -70,3 +70,15 @@ The current MVP includes an in-memory adapter. Planned adapters:
 ## 7. Safety boundaries
 
 The memory engine provides context, not authority. Integrators should keep destructive actions behind deterministic policy checks and human approval.
+
+## 8. Experience Capsule Compiler
+
+Execution traces are converted into candidate capsules by a deterministic compiler. The compiler preserves the original task signature, mistakes, failed attempts, root cause, resolution rationale, applicability boundaries, and validation evidence.
+
+Compilation and activation are deliberately separate:
+
+```text
+execution trace → candidate capsule → user approval + tests → active capsule
+```
+
+No model-generated capsule becomes active automatically. The activation API rejects capsules without explicit approval or sufficient passing evidence.

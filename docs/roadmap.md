@@ -10,14 +10,25 @@
 - contextual incident applicability;
 - tests and examples.
 
-## 0.2 — Persistent storage
+## 0.2 — Experience capsules and controlled activation
+
+- structured execution traces;
+- deterministic candidate compilation;
+- preservation of errors, failed attempts, root causes, and rationale;
+- explicit applicability and exclusion conditions;
+- mandatory user approval before activation;
+- mandatory passing validation evidence;
+- capsule documentation and examples.
+
+## 0.3 — Persistent storage
 
 - SQLite adapter;
 - JSONL import/export;
 - schema migration strategy;
-- deterministic snapshots.
+- deterministic snapshots;
+- append-only capsule lifecycle history.
 
-## 0.3 — Retrieval evaluation
+## 0.4 — Retrieval evaluation
 
 - benchmark fixtures;
 - global semantic baseline;
@@ -25,14 +36,14 @@
 - wrong-fix reuse metrics;
 - experiment runner.
 
-## 0.4 — Agent integrations
+## 0.5 — Agent integrations
 
 - OpenAI Agents SDK adapter;
 - Codex-oriented workflow examples;
 - LangGraph adapter;
 - provider-neutral context compiler.
 
-## 0.5 — Production safeguards
+## 0.6 — Production safeguards
 
 - provenance validation;
 - contradiction detection;

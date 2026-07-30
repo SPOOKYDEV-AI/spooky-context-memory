@@ -1,9 +1,6 @@
 import type { MemoryLink, MemoryNode } from "../domain/types.js";
+import { clonePlainData } from "../utils/clone-plain-data.js";
 import type { MemoryStore } from "./memory-store.js";
-
-function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
 
 export class InMemoryMemoryStore implements MemoryStore {
   private readonly nodes = new Map<string, MemoryNode>();
@@ -24,7 +21,7 @@ export class InMemoryMemoryStore implements MemoryStore {
       );
     }
 
-    this.nodes.set(node.id, clone(node));
+    this.nodes.set(node.id, clonePlainData(node));
   }
 
   public upsertNode(node: MemoryNode): void {
@@ -34,7 +31,7 @@ export class InMemoryMemoryStore implements MemoryStore {
       );
     }
 
-    this.nodes.set(node.id, clone(node));
+    this.nodes.set(node.id, clonePlainData(node));
   }
 
   public addLink(link: MemoryLink): void {
@@ -50,33 +47,33 @@ export class InMemoryMemoryStore implements MemoryStore {
       throw new Error(`Unknown target node "${link.targetNodeId}".`);
     }
 
-    this.links.set(link.id, clone(link));
+    this.links.set(link.id, clonePlainData(link));
   }
 
   public getNode(id: string): MemoryNode | undefined {
     const node = this.nodes.get(id);
-    return node ? clone(node) : undefined;
+    return node ? clonePlainData(node) : undefined;
   }
 
   public getAllNodes(): MemoryNode[] {
-    return [...this.nodes.values()].map((node) => clone(node));
+    return [...this.nodes.values()].map((node) => clonePlainData(node));
   }
 
   public getChildren(parentId: string): MemoryNode[] {
     return [...this.nodes.values()]
       .filter((node) => node.parentId === parentId)
-      .map((node) => clone(node));
+      .map((node) => clonePlainData(node));
   }
 
   public getLinksFrom(nodeId: string): MemoryLink[] {
     return [...this.links.values()]
       .filter((link) => link.sourceNodeId === nodeId)
-      .map((link) => clone(link));
+      .map((link) => clonePlainData(link));
   }
 
   public getLinksTo(nodeId: string): MemoryLink[] {
     return [...this.links.values()]
       .filter((link) => link.targetNodeId === nodeId)
-      .map((link) => clone(link));
+      .map((link) => clonePlainData(link));
   }
 }
