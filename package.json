@@ -11,6 +11,9 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "spooky-memory": "./dist/cli/spooky-memory.js"
+  },
   "files": [
     "dist",
     "README.md",
@@ -18,9 +21,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "check": "npm run build && npm run test"
+    "test": "npm run build && vitest run",
+    "test:watch": "npm run build && vitest",
+    "check": "npm run test",
+    "test:reliability": "npm run build && vitest run tests/persistence-*.test.ts",
+    "test:gauntlet": "npm run build && vitest run tests/persistence-property-gauntlet.test.ts tests/persistence-mutation-gauntlet.test.ts",
+    "memory:cli": "node dist/cli/spooky-memory.js"
   },
   "keywords": [
     "ai-agents",
@@ -60,7 +66,13 @@
     "deterministic-replay",
     "append-only-journal",
     "memory-snapshots",
-    "crash-recovery"
+    "crash-recovery",
+    "property-based-testing",
+    "model-based-testing",
+    "fault-injection",
+    "backup-restore",
+    "crash-consistency",
+    "reliability-engineering"
   ],
   "author": "François Bove",
   "license": "MIT",

@@ -1,4 +1,5 @@
 import { clonePlainData } from "../utils/clone-plain-data.js";
+import { normalizeCanonicalJson } from "./canonical-json.js";
 import type {
   EventMigration,
   MemorySnapshot,
@@ -58,7 +59,9 @@ export class PersistenceMigrationRegistry {
           `Missing event migration from schema ${schemaVersion} to ${targetVersion}.`,
         );
       }
-      payload = migration.migrate(clonePlainData(payload));
+      payload = normalizeCanonicalJson(
+        migration.migrate(clonePlainData(payload)),
+      );
       schemaVersion = migration.toVersion;
     }
     if (schemaVersion !== targetVersion) {
@@ -87,7 +90,9 @@ export class PersistenceMigrationRegistry {
           `Missing snapshot migration from schema ${schemaVersion} to ${targetVersion}.`,
         );
       }
-      state = migration.migrate(clonePlainData(state));
+      state = normalizeCanonicalJson(
+        migration.migrate(clonePlainData(state)),
+      );
       schemaVersion = migration.toVersion;
     }
     if (schemaVersion !== targetVersion) {

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { stableStringify } from "../utils/stable-hash.js";
+import { canonicalJsonStringify } from "./canonical-json.js";
 import type {
   MemorySnapshot,
   PersistedMemoryEvent,
@@ -8,12 +8,12 @@ import type {
 
 export const GENESIS_EVENT_HASH = "GENESIS";
 
-export function sha256(value: string): string {
-  return createHash("sha256").update(value, "utf8").digest("hex");
+export function sha256(value: string | Uint8Array): string {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 export function hashPlainData(value: unknown): string {
-  return sha256(stableStringify(value));
+  return sha256(canonicalJsonStringify(value));
 }
 
 export function createEventIdentity(input: {
@@ -23,7 +23,7 @@ export function createEventIdentity(input: {
   payloadHash: string;
 }): string {
   return `evt_${sha256(
-    stableStringify({
+    canonicalJsonStringify({
       streamId: input.streamId,
       sequence: input.sequence,
       type: input.event.type,

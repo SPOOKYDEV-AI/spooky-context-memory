@@ -11,6 +11,12 @@ export const DEFAULT_LOGICAL_COMPACTION_POLICY: LogicalCompactionPolicy = {
   archiveRecommendationAfterEvents: 10_000,
 };
 
+function assertPositiveSafeInteger(value: number, name: string): void {
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive safe integer.`);
+  }
+}
+
 export function planLogicalCompaction(input: {
   inspection: JournalInspection;
   snapshots: MemorySnapshot[];
@@ -20,12 +26,19 @@ export function planLogicalCompaction(input: {
     ...DEFAULT_LOGICAL_COMPACTION_POLICY,
     ...input.policy,
   };
+  assertPositiveSafeInteger(policy.snapshotAfterEvents, "snapshotAfterEvents");
+  assertPositiveSafeInteger(policy.retainSnapshots, "retainSnapshots");
+  assertPositiveSafeInteger(
+    policy.archiveRecommendationAfterEvents,
+    "archiveRecommendationAfterEvents",
+  );
+  const streamSnapshots = input.snapshots.filter(
+    (snapshot) => snapshot.streamId === input.inspection.streamId,
+  );
   const latestSequence = input.inspection.validThroughSequence;
   const latestSnapshotSequence = Math.max(
     0,
-    ...input.snapshots
-      .filter((snapshot) => snapshot.streamId === input.inspection.streamId)
-      .map((snapshot) => snapshot.sequence),
+    ...streamSnapshots.map((snapshot) => snapshot.sequence),
   );
   const eventsAfterSnapshot = Math.max(
     0,
@@ -33,7 +46,7 @@ export function planLogicalCompaction(input: {
   );
   const snapshotRequired = eventsAfterSnapshot >= policy.snapshotAfterEvents;
   const snapshotPruningRequired =
-    input.snapshots.length > policy.retainSnapshots;
+    streamSnapshots.length > policy.retainSnapshots;
   const archiveRecommended =
     latestSequence >= policy.archiveRecommendationAfterEvents;
   const reasons: string[] = [];
@@ -47,7 +60,7 @@ export function planLogicalCompaction(input: {
   }
   if (snapshotPruningRequired) {
     reasons.push(
-      `${input.snapshots.length} snapshots exceed the retention target ${policy.retainSnapshots}.`,
+      `${streamSnapshots.length} snapshots exceed the retention target ${policy.retainSnapshots}.`,
     );
   }
   if (archiveRecommended) {
@@ -73,7 +86,7 @@ export function planLogicalCompaction(input: {
     latestSequence,
     latestSnapshotSequence,
     eventsAfterSnapshot,
-    snapshotCount: input.snapshots.length,
+    snapshotCount: streamSnapshots.length,
     retainSnapshots: policy.retainSnapshots,
     physicalDeletionAllowed: false,
     reasons:

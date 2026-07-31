@@ -101,3 +101,7 @@ export * from "./persistence/replay.js";
 export * from "./persistence/adaptive-memory-persistence.js";
 export * from "./evaluation/persistence-metrics.js";
 export * from "./persistence/compaction.js";
+export * from "./persistence/canonical-json.js";
+export * from "./persistence/fault-injection.js";
+export * from "./persistence/backup.js";
+export * from "./evaluation/persistence-health-report.js";

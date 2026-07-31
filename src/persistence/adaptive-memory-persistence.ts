@@ -1,5 +1,6 @@
 import type { CompleteAdaptiveMemoryEvolutionResult } from "../orchestration/adaptive-memory-evolution-cycle.js";
 import { clonePlainData } from "../utils/clone-plain-data.js";
+import { normalizeCanonicalJson } from "./canonical-json.js";
 import { GENESIS_EVENT_HASH } from "./checksums.js";
 import { PersistenceMigrationRegistry } from "./migrations.js";
 import { replayMemoryStream } from "./replay.js";
@@ -102,8 +103,23 @@ export function createEmptyAdaptiveMemoryDurableState(
 export function validateAdaptiveMemoryDurableState(
   state: AdaptiveMemoryDurableState,
 ): void {
+  if (!Number.isSafeInteger(state.revision) || state.revision < 0) {
+    throw new Error("Durable state revision must be a non-negative integer.");
+  }
+  if (!Number.isSafeInteger(state.memoryRevision) || state.memoryRevision < 0) {
+    throw new Error("Durable memory revision must be a non-negative integer.");
+  }
+  if (
+    typeof state.updatedAt !== "string" ||
+    !Number.isFinite(Date.parse(state.updatedAt))
+  ) {
+    throw new Error("Durable state updatedAt must be a valid timestamp.");
+  }
   const nodeIds = new Set<string>();
   for (const node of state.nodes) {
+    if (node.id.trim().length === 0) {
+      throw new Error("Durable memory node id cannot be empty.");
+    }
     if (nodeIds.has(node.id)) {
       throw new Error(`Duplicate durable memory node "${node.id}".`);
     }
@@ -119,8 +135,25 @@ export function validateAdaptiveMemoryDurableState(
       );
     }
   }
+  const parents = new Map(
+    state.nodes.map((node) => [node.id, node.parentId] as const),
+  );
+  for (const node of state.nodes) {
+    const visited = new Set<string>([node.id]);
+    let parentId = node.parentId;
+    while (parentId !== null) {
+      if (visited.has(parentId)) {
+        throw new Error(`Durable memory parent cycle detected at "${parentId}".`);
+      }
+      visited.add(parentId);
+      parentId = parents.get(parentId) ?? null;
+    }
+  }
   const linkIds = new Set<string>();
   for (const link of state.links) {
+    if (link.id.trim().length === 0) {
+      throw new Error("Durable memory link id cannot be empty.");
+    }
     if (linkIds.has(link.id)) {
       throw new Error(`Duplicate durable memory link "${link.id}".`);
     }
@@ -130,9 +163,9 @@ export function validateAdaptiveMemoryDurableState(
         `Durable memory link "${link.id}" references an unknown node.`,
       );
     }
-  }
-  if (!Number.isSafeInteger(state.revision) || state.revision < 0) {
-    throw new Error("Durable state revision must be a non-negative integer.");
+    if (!Number.isFinite(link.weight)) {
+      throw new Error(`Durable memory link "${link.id}" has invalid weight.`);
+    }
   }
 }
 
@@ -290,8 +323,39 @@ export class PersistentAdaptiveMemory {
     events: ReadonlyArray<UncommittedMemoryEvent>,
     expectedSequence?: number,
   ): Promise<PersistentAdaptiveMemoryCommitResult> {
+    const before = await this.hydrate();
+    if (
+      expectedSequence !== undefined &&
+      expectedSequence !== before.sequence
+    ) {
+      throw new Error(
+        `Optimistic concurrency conflict for stream "${this.streamId}": expected sequence ${expectedSequence}, actual ${before.sequence}.`,
+      );
+    }
+
+    let candidateState = clonePlainData(before.state);
+    for (const [index, event] of events.entries()) {
+      const normalized = normalizeCanonicalJson(event) as unknown as UncommittedMemoryEvent;
+      const source: PersistedMemoryEvent = {
+        ...normalized,
+        eventId: `evt_${"0".repeat(32)}`,
+        streamId: this.streamId,
+        sequence: before.sequence + index + 1,
+        recordedAt: normalized.occurredAt,
+        previousHash: GENESIS_EVENT_HASH,
+        payloadHash: "0".repeat(64),
+        eventHash: "0".repeat(64),
+      };
+      const projected = this.migrations.projectEvent(
+        source,
+        this.policy.schemaVersion,
+      );
+      candidateState = reduceAdaptiveMemoryEvent(candidateState, projected);
+    }
+    validateAdaptiveMemoryDurableState(candidateState);
+
     const persisted = await this.journal.append(this.streamId, events, {
-      ...(expectedSequence === undefined ? {} : { expectedSequence }),
+      expectedSequence: before.sequence,
     });
     const hydrated = await this.hydrate();
     const snapshot = await this.maybeCheckpoint(

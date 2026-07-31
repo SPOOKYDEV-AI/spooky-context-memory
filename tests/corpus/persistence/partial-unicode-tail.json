@@ -1,0 +1,6 @@
+{
+  "id": "partial-unicode-tail",
+  "seed": 170071,
+  "failure": "partial trailing UTF-8 JSON record",
+  "expected": "recoverable_by_explicit_trailing_truncation"
+}

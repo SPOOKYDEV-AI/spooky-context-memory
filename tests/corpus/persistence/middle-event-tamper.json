@@ -1,0 +1,6 @@
+{
+  "id": "middle-event-tamper",
+  "seed": 170072,
+  "failure": "middle event payload changed without rehashing",
+  "expected": "non_trailing_corruption_refuses_recovery"
+}

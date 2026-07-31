@@ -1,0 +1,6 @@
+{
+  "id": "orphan-lock",
+  "seed": 170073,
+  "failure": "writer process disappeared while lock remained",
+  "expected": "explicit_owner_checked_lock_recovery"
+}

@@ -42,3 +42,11 @@ coverage/
 *.memory-snapshot.json
 *.memory-recovery.json
 *.memory.lock
+
+# Reliability, backup and recovery outputs
+spooky-memory-backup/
+*.memory-backup/
+.reliability-artifacts/
+gauntlet-results/
+*.restore-staging/
+*.pre-restore/
