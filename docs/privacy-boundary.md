@@ -55,10 +55,18 @@ A private integration may use:
 ├── vision-ensembles/
 ├── vision-checkpoints/
 ├── reconstructions/
+├── journals/
+├── snapshots/
+├── recovery-reports/
+├── backups/
 └── memory.db
 ```
 
 The complete directory must be ignored by Git.
+
+Journal files, snapshots, temporary snapshot files, lock files, backups, exports, migration reports, and recovery reports may contain the same sensitive data as live memory. They must follow the same access, encryption, retention, and deletion policy as the private runtime itself.
+
+A checksum proves integrity, not confidentiality. The v0.7 reference file adapter does not encrypt data at rest.
 
 ## Public fixture guard
 

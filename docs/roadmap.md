@@ -40,31 +40,42 @@
 - dynamic equilibrium;
 - retroactive outcome learning.
 
-## 0.6 — Global Coherence, Reflective Learning, and Adaptive Unlearning — current
+## 0.6 — Global Coherence, Reflective Learning, and Adaptive Unlearning — released
 
 - global-understanding models and alternatives;
 - semantic backbone;
 - local-versus-global revision gate;
-- cognitive trajectory recording;
-- separate outcome, prediction, cause, and efficiency analysis;
+- grounded cognitive trajectory learning;
 - reflective capsules and contextual cognitive policies;
 - self-bias monitoring;
 - cognitive habits and adaptive confidence;
-- context-drift detection;
-- reversible inhibition, narrowing, weakening, quarantine, supersession, and reopening unknown;
-- counterfactual Views;
-- relearning plans and recovery registry;
-- end-to-end adaptive memory-evolution orchestration;
-- adaptive-memory metrics.
+- reversible unlearning, counterfactual Views, relearning, and recovery.
 
-## 0.7 — Persistence
+## 0.7 — Persistent Adaptive Memory and Deterministic Replay — current
 
-- SQLite adapter;
-- append-only lifecycle journal;
-- deterministic snapshots;
-- JSONL import/export and migrations;
-- retention, deletion, and optional encrypted private storage;
-- selective persistence for temporary Views and cognitive trajectories.
+- storage-neutral event-journal and snapshot contracts;
+- Node.js 20-compatible JSONL reference journal;
+- SHA-256 payload, event, state, and snapshot integrity;
+- previous-event hash chaining;
+- contiguous stream sequences and optimistic concurrency;
+- per-stream single-writer lock files;
+- atomic checksummed snapshots with latest-valid fallback;
+- deterministic reducers and double-replay verification;
+- sequential read-time event and snapshot migrations;
+- explicit trailing-corruption recovery;
+- durable adaptive-memory projection;
+- automatic checkpointing and snapshot retention;
+- logical compaction without destructive journal deletion;
+- persistence-health metrics;
+- synthetic recovery and replay tests.
+
+## 0.7.1 — Persistence adapters and archival
+
+- SQLite adapter behind the v0.7 contracts;
+- segmented-journal archival;
+- encrypted-at-rest private adapter;
+- backup, restore, and export tooling;
+- cross-process lease hardening.
 
 ## 0.8 — Agent integrations
 
@@ -72,13 +83,13 @@
 - Council integration;
 - OpenAI Agents and Codex examples;
 - LangGraph adapter;
-- runtime hooks for context, attention, View verdicts, reflection, and unlearning.
+- runtime hooks for context, attention, View verdicts, reflection, unlearning, and persistence.
 
 ## 0.9 — Production safeguards
 
 - human correction workflows;
 - audit events and redaction;
-- observability for global revision, reflective bias, and unlearning;
+- observability for global revision, reflective bias, unlearning, replay, and recovery;
 - adversarial false-memory and self-reinforcement tests.
 
 ## 1.0

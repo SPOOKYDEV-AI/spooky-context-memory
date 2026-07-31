@@ -27,3 +27,15 @@ Current fixtures cover:
 Target evaluation compares transcript replay, static summaries, static Visions, Context Dynamics, Progressive Vision ensembles, Attention-Driven Retroactive Memory, and Global-Coherence Adaptive Memory.
 
 Metrics include context bleed, premature drop, transition loss, false pruning, invariant fidelity, global coherence, revision locality, mirror grounding, causal-calibration gap, View yield, attention diversity, contradiction discovery, habit rigidity, reversible-unlearning rate, recovery readiness, exploration debt, visited memory, injected memory, and time to accepted outcome.
+
+## Persistent replay benchmark
+
+`fixtures/deterministic-replay-recovery.json` defines a synthetic durability scenario covering:
+
+- contiguous event append;
+- verified snapshot anchoring;
+- bounded replay after the snapshot;
+- deterministic state hashing;
+- partial trailing-record detection;
+- explicit recovery;
+- preservation of append-only history during logical compaction.

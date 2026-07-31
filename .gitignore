@@ -6,7 +6,7 @@ coverage/
 .DS_Store
 
 # Private runtime memory
-.context-memory/private/
+.context-memory/
 *.memory.db
 *.vision.private.json
 *.capsule.private.json
@@ -36,3 +36,9 @@ coverage/
 *.counterfactual-view.private.json
 *.unlearning.private.json
 *.relearning.private.json
+
+# Durable persistence artifacts outside the default private root
+*.memory-journal.jsonl
+*.memory-snapshot.json
+*.memory-recovery.json
+*.memory.lock

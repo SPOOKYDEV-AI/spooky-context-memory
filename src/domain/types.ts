@@ -40,7 +40,12 @@ export type MemoryNodeType =
   | "habit_recovery"
   | "counterfactual_view"
   | "unlearning_event"
-  | "relearning_plan";
+  | "relearning_plan"
+  | "durable_memory_state"
+  | "event_journal"
+  | "memory_snapshot"
+  | "schema_migration"
+  | "persistence_recovery";
 
 export type MemoryNodeStatus =
   | "active"
@@ -89,7 +94,11 @@ export type MemoryLinkType =
   | "learns_from_view"
   | "constrained_by_understanding"
   | "counterfactual_to"
-  | "transfers_into";
+  | "transfers_into"
+  | "persisted_as"
+  | "replayed_from"
+  | "migrated_from"
+  | "recovered_from";
 
 export type SourceType =
   | "user"
