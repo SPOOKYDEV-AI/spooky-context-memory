@@ -51,7 +51,7 @@
 - cognitive habits and adaptive confidence;
 - reversible unlearning, counterfactual Views, relearning, and recovery.
 
-## 0.7 — Persistent Adaptive Memory and Deterministic Replay — current
+## 0.7 — Persistent Adaptive Memory and Deterministic Replay — released
 
 - storage-neutral event-journal and snapshot contracts;
 - Node.js 20-compatible JSONL reference journal;
@@ -69,13 +69,29 @@
 - persistence-health metrics;
 - synthetic recovery and replay tests.
 
-## 0.7.1 — Persistence adapters and archival
+## 0.7.1 — Persistence Reliability Gauntlet — current
 
-- SQLite adapter behind the v0.7 contracts;
+- canonical JSON validation and unsafe-value rejection;
+- exact byte-level journal inspection for Unicode and partial writes;
+- structured lock ownership with PID, host, owner id, and explicit orphan recovery;
+- replacement-lock ownership protection;
+- fsync-backed journal and snapshot writes;
+- immutable snapshot sequences and temporary-file inspection;
+- checksummed backup manifests and staged restore verification;
+- read-only operational inspection and explicit recovery CLI;
+- deterministic fault injection at durable I/O boundaries;
+- model-based state-machine tests;
+- journal mutation resistance matrix;
+- one-million-case daily generated-property campaign;
+- Windows and Linux CI across Node.js 20, 22, and 24;
+- permanent synthetic regression corpus.
+
+Deferred after hardening:
+
+- SQLite adapter behind the storage-neutral contracts;
 - segmented-journal archival;
 - encrypted-at-rest private adapter;
-- backup, restore, and export tooling;
-- cross-process lease hardening.
+- distributed leases for multi-host writers.
 
 ## 0.8 — Agent integrations
 

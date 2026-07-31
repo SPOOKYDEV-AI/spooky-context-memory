@@ -109,6 +109,37 @@ The event journal is the historical source. Snapshots accelerate replay but neve
 
 Recovery is explicit. A partial trailing write may be truncated only after inspection identifies the last valid byte. Middle-of-stream corruption is never silently repaired.
 
+## Persistence Reliability Gauntlet
+
+v0.7.1 hardens the durable boundary through deterministic fault injection, explicit lock ownership, exclusive snapshot publication, verified backup and restore, operational health states, multi-process writer races, and cross-platform stress campaigns.
+
+```text
+valid history
+→ intentional crash or mutation
+→ deterministic inspection
+→ explicit health classification
+→ safe refusal or bounded recovery
+→ replay equivalence check
+```
+
+The daily reliability workflow executes at least one million generated canonicalization and hashing cases across four deterministic shards. Stateful filesystem scenarios then exercise Windows and Linux on Node.js 20, 22, and 24. Every minimized failure is retained as a synthetic regression corpus entry.
+
+Operational tooling is compiled with the package:
+
+```bash
+spooky-memory inspect --root <runtime-root> --stream <stream-id>
+spooky-memory health --root <runtime-root> --stream <stream-id>
+spooky-memory backup --root <runtime-root> --stream <stream-id> --backup <directory>
+```
+
+The package exposes `spooky-memory` through its npm `bin` metadata. Repository checkouts may use `node dist/cli/spooky-memory.js` directly after `npm run build`.
+
+State-changing recovery requires explicit `--confirm`. A corrupted backup, active or remote-host lock, ownership change, non-trailing journal mutation, unanchored snapshot, overlapping backup path, or divergent replay blocks the operation.
+
+Journal, lock, snapshot, backup, and staged-restore publication flushes both file content and parent-directory metadata where the platform supports directory fsync. Pre-existing symbolic-link or non-regular journal and snapshot paths are rejected so the reference adapters do not silently follow persistence artifacts outside their runtime root.
+
+Integrity hashes detect accidental mutation and inconsistent history; they are not authentication. A malicious actor with write access can recompute hashes, and complete suffix truncation cannot be proven from the remaining hash chain alone without a trusted external head, backup, or checkpoint. Operators must preserve verified backups for that threat model.
+
 ## Context as a viscous flow
 
 A new topic does not instantly erase the previous one. Contexts can coexist for several turns:
@@ -458,6 +489,8 @@ src/
 ├── understanding/   Global models, semantic backbone, and revision pressure
 ├── reflection/      Cognitive trajectories, reflective capsules, policies, and bias signals
 ├── unlearning/      Habits, inhibition, counterfactual Views, recovery, and relearning
+├── persistence/     Journals, snapshots, replay, backup, locks, recovery, and fault injection
+├── cli/             Read-only inspection and explicit operational recovery commands
 ├── orchestration/   Attention-driven and adaptive memory-evolution cycles
 ├── preflight/       Minimal preventive context compilation
 ├── privacy/         Public-fixture boundary checks
@@ -506,10 +539,18 @@ src/
 38. Counterfactual exploration preserves the habitual path as a control.
 39. Unlearning changes automatic influence, not historical truth.
 40. Global revisions preserve superseded models and their provenance.
+41. Complete semantic corruption is never downgraded to trailing-write recovery.
+42. A lock may be removed only after owner liveness and owner identity are rechecked.
+43. Snapshot sequences are published with exclusive create semantics and are immutable once valid.
+44. Backup paths must be regular, non-overlapping files and snapshots must anchor to journal history.
+45. A backup is verified in staging before it can replace runtime state.
+46. Deterministic replay divergence makes the stream unsafe to write.
+47. Hashes provide integrity evidence, not authenticity or proof against coordinated history rewriting.
+48. Every generated failure must remain reproducible from its seed and minimized corpus case.
 
 ## Status
 
-`v0.5.0` is released with Attention-Driven Retroactive Memory. The current development milestone adds the v0.6 Global Coherence, Reflective Learning, and Adaptive Unlearning foundation while the package version remains at `0.5.0` until a dedicated release PR.
+`v0.7.0` is released with Persistent Adaptive Memory and Deterministic Replay. The current functional milestone is v0.7.1 Persistence Reliability Gauntlet: cross-platform hardening, fault injection, lock recovery, verified backup and restore, operational CLI tooling, and million-case generated campaigns. The package version remains `0.7.0` until a dedicated release PR.
 
 See:
 
@@ -518,6 +559,9 @@ See:
 - [`docs/memory-v0.4-specification.md`](docs/memory-v0.4-specification.md)
 - [`docs/memory-v0.5-specification.md`](docs/memory-v0.5-specification.md)
 - [`docs/memory-v0.6-specification.md`](docs/memory-v0.6-specification.md)
+- [`docs/memory-v0.7-specification.md`](docs/memory-v0.7-specification.md)
+- [`docs/reliability-gauntlet.md`](docs/reliability-gauntlet.md)
+- [`docs/operational-recovery.md`](docs/operational-recovery.md)
 - [`docs/global-understanding.md`](docs/global-understanding.md)
 - [`docs/reflective-learning.md`](docs/reflective-learning.md)
 - [`docs/adaptive-unlearning.md`](docs/adaptive-unlearning.md)

@@ -24,7 +24,7 @@ describe("file snapshot store", () => {
     const saved = await store.save({
       streamId: "project-a",
       sequence: 4,
-      eventHash: "hash-4",
+      eventHash: "4".repeat(64),
       schemaVersion: 1,
       state: { value: 4 },
       createdAt: "2026-07-31T00:00:04.000Z",
@@ -39,14 +39,14 @@ describe("file snapshot store", () => {
     await store.save({
       streamId: "project-a",
       sequence: 2,
-      eventHash: "hash-2",
+      eventHash: "2".repeat(64),
       schemaVersion: 1,
       state: { value: 2 },
     });
     await store.save({
       streamId: "project-a",
       sequence: 5,
-      eventHash: "hash-5",
+      eventHash: "5".repeat(64),
       schemaVersion: 1,
       state: { value: 5 },
     });
@@ -58,14 +58,14 @@ describe("file snapshot store", () => {
     const older = await store.save({
       streamId: "project-a",
       sequence: 2,
-      eventHash: "hash-2",
+      eventHash: "2".repeat(64),
       schemaVersion: 1,
       state: { value: 2 },
     });
     await store.save({
       streamId: "project-a",
       sequence: 5,
-      eventHash: "hash-5",
+      eventHash: "5".repeat(64),
       schemaVersion: 1,
       state: { value: 5 },
     });
@@ -83,7 +83,7 @@ describe("file snapshot store", () => {
       await store.save({
         streamId: "project-a",
         sequence,
-        eventHash: `hash-${sequence}`,
+        eventHash: String(sequence).repeat(64),
         schemaVersion: 1,
         state: { sequence },
       });

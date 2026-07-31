@@ -71,6 +71,7 @@ export interface JournalInspection {
   validThroughHash: string;
   validByteLength: number;
   totalByteLength: number;
+  endsWithRecordTerminator?: boolean;
   issue: JournalIntegrityIssue | null;
 }
 
@@ -248,6 +249,108 @@ export interface AdaptiveMemoryPersistencePolicy {
   classification: PersistenceDataClassification;
 }
 
+
+
+export interface PersistenceLockMetadata {
+  formatVersion: 1;
+  streamId: string;
+  ownerId: string;
+  pid: number;
+  hostname: string;
+  createdAt: string;
+  heartbeatAt: string;
+}
+
+export type PersistenceLockStatus =
+  | "absent"
+  | "active"
+  | "orphaned"
+  | "expired_unknown_owner"
+  | "invalid";
+
+export interface PersistenceLockInspection {
+  streamId: string;
+  path: string;
+  status: PersistenceLockStatus;
+  metadata: PersistenceLockMetadata | null;
+  ageMs: number | null;
+  ownerAlive: boolean | null;
+  reason: string;
+}
+
+export interface RecoverOrphanedLockOptions {
+  confirm: boolean;
+  expectedOwnerId?: string;
+}
+
+export interface PersistenceLockRecoveryResult {
+  streamId: string;
+  recovered: boolean;
+  previousStatus: PersistenceLockStatus;
+  reason: string;
+}
+
+export interface BackupFileRecord {
+  relativePath: string;
+  byteLength: number;
+  sha256: string;
+}
+
+export interface BackupSnapshotRecord extends BackupFileRecord {
+  snapshotId: string;
+  sequence: number;
+  eventHash: string;
+  stateHash: string;
+  snapshotHash: string;
+}
+
+export interface BackupStreamRecord {
+  streamId: string;
+  journal: BackupFileRecord | null;
+  eventCount: number;
+  latestSequence: number;
+  latestEventHash: string;
+  snapshots: BackupSnapshotRecord[];
+}
+
+export interface PersistenceBackupManifest {
+  format: "spooky-context-memory-backup";
+  formatVersion: 1;
+  createdAt: string;
+  sourcePackageVersion: string;
+  streams: BackupStreamRecord[];
+  manifestHash: string;
+}
+
+export interface PersistenceBackupVerification {
+  valid: boolean;
+  manifest: PersistenceBackupManifest | null;
+  checkedFileCount: number;
+  errors: string[];
+  warnings: string[];
+}
+
+export type PersistenceOperationalStatus =
+  | "healthy"
+  | "degraded_but_readable"
+  | "recovery_required"
+  | "unsafe_to_write"
+  | "corrupted";
+
+export interface PersistenceHealthReport {
+  streamId: string;
+  status: PersistenceOperationalStatus;
+  journalIntegrity: "healthy" | "recoverable" | "corrupted";
+  deterministicReplay: boolean | null;
+  snapshotCoverage: number;
+  replayEventCount: number | null;
+  staleLockCount: number;
+  backupAgeMs?: number;
+  recoveryRequired: boolean;
+  safeToWrite: boolean;
+  blockingReasons: string[];
+  warnings: string[];
+}
 
 export interface LogicalCompactionPolicy {
   snapshotAfterEvents: number;

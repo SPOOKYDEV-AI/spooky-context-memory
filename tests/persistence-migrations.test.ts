@@ -85,4 +85,28 @@ describe("persistence migration registry", () => {
       "Missing event migration",
     );
   });
+  it("rejects non-canonical event migration output", () => {
+    const registry = new PersistenceMigrationRegistry();
+    registry.registerEventMigration({
+      fromVersion: 1,
+      toVersion: 2,
+      migrate: () => ({ value: undefined }),
+    });
+    expect(() => registry.projectEvent(event, 2)).toThrow(
+      "Unsupported JSON value",
+    );
+  });
+
+  it("rejects non-plain snapshot migration output", () => {
+    const registry = new PersistenceMigrationRegistry();
+    registry.registerSnapshotMigration({
+      fromVersion: 1,
+      toVersion: 2,
+      migrate: () => new Date("2026-07-31T00:00:00.000Z"),
+    });
+    expect(() => registry.projectSnapshot(snapshot, 2)).toThrow(
+      "Non-plain object",
+    );
+  });
+
 });

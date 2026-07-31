@@ -40,6 +40,25 @@ describe("persistence recovery and logical compaction", () => {
     expect((await store.inspect("project-a")).issue).toBeNull();
   });
 
+  it("refuses to classify a complete blank record as trailing crash damage", async () => {
+    const store = await journal();
+    await store.append("project-a", [
+      {
+        type: "valid",
+        payload: { value: 1 },
+        schemaVersion: 1,
+        occurredAt: "2026-07-31T00:00:01.000Z",
+      },
+    ]);
+    await appendFile(store.journalPath("project-a"), "\n", "utf8");
+    const inspection = await store.inspect("project-a");
+    expect(inspection.issue?.kind).toBe("unsupported_record");
+    expect(inspection.issue?.recoverableByTrailingTruncation).toBe(false);
+    await expect(store.recoverTrailingCorruption("project-a")).rejects.toThrow(
+      "Refusing to repair non-trailing corruption",
+    );
+  });
+
   it("does not perform a silent recovery when the stream is healthy", async () => {
     const store = await journal();
     const recovery = await store.recoverTrailingCorruption("project-a");
@@ -88,4 +107,46 @@ describe("persistence recovery and logical compaction", () => {
     });
     expect(plan.action).toBe("prune_snapshots");
   });
+  it("ignores snapshots that belong to another stream", async () => {
+    const store = await journal();
+    const inspection = await store.inspect("project-a");
+    const otherSnapshots: MemorySnapshot[] = [1, 2, 3].map((sequence) => ({
+      snapshotId: `other-${sequence}`,
+      streamId: "project-b",
+      sequence,
+      eventHash: `hash-${sequence}`,
+      schemaVersion: 1,
+      state: {},
+      stateHash: "state",
+      snapshotHash: "snapshot",
+      createdAt: "2026-07-31T00:00:00.000Z",
+    }));
+    const plan = planLogicalCompaction({
+      inspection,
+      snapshots: otherSnapshots,
+      policy: { retainSnapshots: 1 },
+    });
+    expect(plan.snapshotCount).toBe(0);
+    expect(plan.action).toBe("none");
+  });
+
+  it("rejects unsafe logical compaction thresholds", async () => {
+    const store = await journal();
+    const inspection = await store.inspect("project-a");
+    expect(() =>
+      planLogicalCompaction({
+        inspection,
+        snapshots: [],
+        policy: { retainSnapshots: 0 },
+      }),
+    ).toThrow("positive safe integer");
+    expect(() =>
+      planLogicalCompaction({
+        inspection,
+        snapshots: [],
+        policy: { snapshotAfterEvents: Number.NaN },
+      }),
+    ).toThrow("positive safe integer");
+  });
+
 });

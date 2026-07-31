@@ -7,6 +7,7 @@ import {
   FileSnapshotStore,
   replayMemoryStream,
   verifyDeterministicReplay,
+  type EventJournal,
   type ProjectedMemoryEvent,
 } from "../src/index.js";
 
@@ -106,7 +107,7 @@ describe("deterministic replay", () => {
     await snapshots.save({
       streamId: "counter",
       sequence: 1,
-      eventHash: "wrong-hash",
+      eventHash: "f".repeat(64),
       schemaVersion: 1,
       state: { total: 1 },
     });
@@ -142,4 +143,80 @@ describe("deterministic replay", () => {
     expect(verification.deterministic).toBe(true);
     expect(verification.first.stateHash).toBe(verification.second.stateHash);
   });
+  it("rejects a sequence-zero snapshot that is not anchored to genesis", async () => {
+    const { journal, snapshots } = await stores();
+    await snapshots.save({
+      streamId: "counter",
+      sequence: 0,
+      eventHash: "e".repeat(64),
+      schemaVersion: 1,
+      state: { total: 0 },
+    });
+    await expect(
+      replayMemoryStream({
+        streamId: "counter",
+        journal,
+        snapshots,
+        targetSchemaVersion: 1,
+        initialState: { total: 0 },
+        reducer,
+      }),
+    ).rejects.toThrow("does not match the journal hash chain");
+  });
+
+  it("distinguishes a changing journal from reducer nondeterminism", async () => {
+    const { journal } = await stores();
+    const events = await journal.append(
+      "counter",
+      [1, 2].map((amount) => ({
+        type: "counter.added",
+        payload: { amount },
+        schemaVersion: 1,
+        occurredAt: `2026-07-31T00:00:0${amount}.000Z`,
+      })),
+    );
+    let reads = 0;
+    const changingJournal = {
+      async read() {
+        reads += 1;
+        return reads === 1 ? [events[0]!] : events;
+      },
+    } as unknown as EventJournal;
+    const verification = await verifyDeterministicReplay({
+      streamId: "counter",
+      journal: changingJournal,
+      targetSchemaVersion: 1,
+      initialState: { total: 0 },
+      reducer,
+    });
+    expect(verification.deterministic).toBe(false);
+    expect(verification.reason).toContain("journal changed");
+  });
+
+  it("rejects non-canonical reducer state before it can be silently normalized", async () => {
+    const { journal } = await stores();
+    await journal.append(
+      "counter",
+      [1, 2].map((amount) => ({
+        type: "counter.added",
+        payload: { amount },
+        schemaVersion: 1,
+        occurredAt: `2026-07-31T00:00:0${amount}.000Z`,
+      })),
+    );
+    await expect(
+      replayMemoryStream({
+        streamId: "counter",
+        journal,
+        targetSchemaVersion: 1,
+        initialState: { total: 0 },
+        reducer: (state, event) => ({
+          ...state,
+          total: state.total + (event.payload as { amount: number }).amount,
+          hidden: undefined,
+        }),
+      }),
+    ).rejects.toThrow("Unsupported JSON value");
+  });
+
 });

@@ -158,4 +158,56 @@ describe("persistent adaptive memory", () => {
     expect(hydrated.snapshotId).not.toBeNull();
     expect(hydrated.replayedEventCount).toBe(0);
   });
+  it("rejects unsupported domain events before they enter the journal", async () => {
+    const root = await mkdtemp(join(tmpdir(), "spooky-adaptive-preflight-"));
+    roots.push(root);
+    const journal = new FileEventJournal({ rootDirectory: root });
+    const memory = new PersistentAdaptiveMemory({
+      streamId: "project-atlas",
+      journal,
+      snapshots: new FileSnapshotStore({ rootDirectory: root }),
+    });
+    await expect(
+      memory.append([
+        {
+          type: "unsupported.authority",
+          payload: { value: 1 },
+          schemaVersion: 1,
+          occurredAt: now,
+        },
+      ]),
+    ).rejects.toThrow("Unsupported adaptive-memory event");
+    expect((await journal.inspect("project-atlas")).validThroughSequence).toBe(0);
+  });
+
+  it("rejects invalid graph updates before committing them", async () => {
+    const root = await mkdtemp(join(tmpdir(), "spooky-adaptive-invalid-link-"));
+    roots.push(root);
+    const journal = new FileEventJournal({ rootDirectory: root });
+    const memory = new PersistentAdaptiveMemory({
+      streamId: "project-atlas",
+      journal,
+      snapshots: new FileSnapshotStore({ rootDirectory: root }),
+    });
+    await expect(
+      memory.append([
+        {
+          type: "memory.link_upserted",
+          payload: {
+            link: {
+              id: "link-invalid",
+              sourceNodeId: "missing-a",
+              targetNodeId: "missing-b",
+              type: "depends_on",
+              weight: 1,
+            },
+          },
+          schemaVersion: 1,
+          occurredAt: now,
+        },
+      ]),
+    ).rejects.toThrow("unknown node");
+    expect((await journal.inspect("project-atlas")).validThroughSequence).toBe(0);
+  });
+
 });

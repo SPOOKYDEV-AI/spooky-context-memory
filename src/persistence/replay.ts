@@ -1,5 +1,6 @@
 import { performance } from "node:perf_hooks";
 import { clonePlainData } from "../utils/clone-plain-data.js";
+import { normalizeCanonicalJson } from "./canonical-json.js";
 import { hashPlainData, GENESIS_EVENT_HASH } from "./checksums.js";
 import type {
   DeterministicReplayVerification,
@@ -10,6 +11,10 @@ import type {
   ReplayOptions,
   ReplayResult,
 } from "./types.js";
+
+function canonicalStateClone<TState>(state: unknown): TState {
+  return normalizeCanonicalJson(state) as unknown as TState;
+}
 
 function defaultEventProjection(
   event: PersistedMemoryEvent,
@@ -50,7 +55,7 @@ export async function replayMemoryStream<TState>(
   const events = await options.journal.read(options.streamId);
   const latestSequence = events.at(-1)?.sequence ?? 0;
   const latestHash = events.at(-1)?.eventHash ?? GENESIS_EVENT_HASH;
-  let state = clonePlainData(options.initialState);
+  let state = canonicalStateClone<TState>(options.initialState);
   let snapshotSequence = 0;
   let usedSnapshotId: string | null = null;
 
@@ -62,19 +67,20 @@ export async function replayMemoryStream<TState>(
           `Snapshot ${snapshot.snapshotId} is ahead of journal sequence ${latestSequence}.`,
         );
       }
-      if (snapshot.sequence > 0) {
-        const anchor = events.find((event) => event.sequence === snapshot.sequence);
-        if (anchor === undefined || anchor.eventHash !== snapshot.eventHash) {
-          throw new Error(
-            `Snapshot ${snapshot.snapshotId} does not match the journal hash chain.`,
-          );
-        }
+      const anchor =
+        snapshot.sequence === 0
+          ? GENESIS_EVENT_HASH
+          : events.find((event) => event.sequence === snapshot.sequence)?.eventHash;
+      if (anchor === undefined || anchor !== snapshot.eventHash) {
+        throw new Error(
+          `Snapshot ${snapshot.snapshotId} does not match the journal hash chain.`,
+        );
       }
       const projected = (options.migrateSnapshot ?? defaultSnapshotProjection<TState>)(
         snapshot,
         options.targetSchemaVersion,
       );
-      state = clonePlainData(projected.state);
+      state = canonicalStateClone<TState>(projected.state);
       snapshotSequence = snapshot.sequence;
       usedSnapshotId = snapshot.snapshotId;
     }
@@ -88,12 +94,14 @@ export async function replayMemoryStream<TState>(
       event,
       options.targetSchemaVersion,
     );
-    state = options.reducer(clonePlainData(state), projected);
+    state = canonicalStateClone<TState>(
+      options.reducer(canonicalStateClone<TState>(state), projected),
+    );
   }
   options.validateState?.(state);
   return {
     streamId: options.streamId,
-    state: clonePlainData(state),
+    state: canonicalStateClone<TState>(state),
     finalSequence: latestSequence,
     finalEventHash: latestHash,
     stateHash: hashPlainData(state),
@@ -109,16 +117,19 @@ export async function verifyDeterministicReplay<TState>(
 ): Promise<DeterministicReplayVerification<TState>> {
   const first = await replayMemoryStream(options);
   const second = await replayMemoryStream(options);
-  const deterministic =
+  const sameHistory =
     first.finalSequence === second.finalSequence &&
-    first.finalEventHash === second.finalEventHash &&
-    first.stateHash === second.stateHash;
+    first.finalEventHash === second.finalEventHash;
+  const sameState = first.stateHash === second.stateHash;
+  const deterministic = sameHistory && sameState;
   return {
     deterministic,
     first,
     second,
     reason: deterministic
       ? "Two independent replays produced the same sequence, event hash, and state hash."
-      : "Replay outputs diverged; the reducer or migrations are not deterministic.",
+      : !sameHistory
+        ? "The journal changed between replay passes; retry verification while the stream is quiescent."
+        : "The same journal history produced different state hashes; the reducer or migrations are not deterministic.",
   };
 }
