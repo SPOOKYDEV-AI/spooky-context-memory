@@ -1,6 +1,6 @@
 {
   "name": "@spooky-ai/context-memory",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Scope-aware experiential memory with global coherence, reflective learning, adaptive unlearning, and deterministic persistence for reliable AI agents.",
   "type": "module",
   "main": "./dist/index.js",
@@ -77,7 +77,7 @@
     "crash-consistency",
     "reliability-engineering"
   ],
-  "author": "Fran\u00e7ois Bove",
+  "author": "François Bove",
   "license": "MIT",
   "engines": {
     "node": ">=20"
