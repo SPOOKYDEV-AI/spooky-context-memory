@@ -1,9 +1,11 @@
 import { constants } from "node:fs";
 import {
+  link,
   lstat,
   mkdir,
   open,
   readFile,
+  rename,
   truncate,
   unlink,
 } from "node:fs/promises";
@@ -28,6 +30,7 @@ import {
   NoopPersistenceFaultInjector,
   type PersistenceFaultInjector,
 } from "./fault-injection.js";
+import { isCanonicalUtcTimestamp } from "./timestamps.js";
 import type {
   AppendEventsOptions,
   EventJournal,
@@ -48,6 +51,10 @@ export interface FileEventJournalOptions {
   lockTimeoutMs?: number;
   lockRetryMs?: number;
   staleLockMs?: number;
+  maxEventBatchSize?: number;
+  maxSerializedAppendBytes?: number;
+  maxJournalBytes?: number;
+  maxLockMetadataBytes?: number;
   faultInjector?: PersistenceFaultInjector;
   now?: () => Date;
 }
@@ -121,9 +128,23 @@ function ensureDuration(
   }
 }
 
+function ensurePositiveSafeInteger(name: string, value: number): void {
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new Error(`${name} must be a positive safe integer.`);
+  }
+}
+
 function streamKey(streamId: string): string {
   return sha256(streamId).slice(0, 40);
 }
+
+const RETRYABLE_LOCK_FILESYSTEM_CODES = new Set([
+  "EACCES",
+  "EBUSY",
+  "EPERM",
+]);
+
+const LOCK_FILESYSTEM_RETRY_LIMIT = 20;
 
 function asErrorCode(error: unknown): string | null {
   if (typeof error !== "object" || error === null || !("code" in error)) {
@@ -131,6 +152,15 @@ function asErrorCode(error: unknown): string | null {
   }
   const code = (error as { code?: unknown }).code;
   return typeof code === "string" ? code : null;
+}
+
+function isRetryableLockFilesystemError(error: unknown): boolean {
+  const code = asErrorCode(error);
+  return code !== null && RETRYABLE_LOCK_FILESYSTEM_CODES.has(code);
+}
+
+function errorDescription(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function ensureStreamId(streamId: string): void {
@@ -169,10 +199,6 @@ function hasOnlyKeys(
   return Object.keys(record).every((key) => allowed.has(key));
 }
 
-function isValidTimestamp(value: unknown): value is string {
-  return typeof value === "string" && Number.isFinite(Date.parse(value));
-}
-
 function isOptionalString(
   record: Record<string, unknown>,
   key: string,
@@ -206,7 +232,7 @@ function isUncommittedMemoryEventRecord(
     event.type.trim().length > 0 &&
     Number.isSafeInteger(event.schemaVersion) &&
     (event.schemaVersion as number) >= 1 &&
-    isValidTimestamp(event.occurredAt) &&
+    isCanonicalUtcTimestamp(event.occurredAt) &&
     "payload" in event &&
     hasValidOptionalMetadata(event)
   );
@@ -230,7 +256,7 @@ function isPersistedMemoryEvent(value: unknown): value is PersistedMemoryEvent {
     event.streamId.trim().length > 0 &&
     Number.isSafeInteger(event.sequence) &&
     (event.sequence as number) >= 1 &&
-    isValidTimestamp(event.recordedAt) &&
+    isCanonicalUtcTimestamp(event.recordedAt) &&
     typeof event.previousHash === "string" &&
     (event.previousHash === GENESIS_EVENT_HASH ||
       /^[a-f0-9]{64}$/u.test(event.previousHash)) &&
@@ -362,9 +388,9 @@ function isLockMetadata(value: unknown): value is PersistenceLockMetadata {
     typeof metadata.hostname === "string" &&
     metadata.hostname.trim().length > 0 &&
     typeof metadata.createdAt === "string" &&
-    Number.isFinite(Date.parse(metadata.createdAt)) &&
+    isCanonicalUtcTimestamp(metadata.createdAt) &&
     typeof metadata.heartbeatAt === "string" &&
-    Number.isFinite(Date.parse(metadata.heartbeatAt))
+    isCanonicalUtcTimestamp(metadata.heartbeatAt)
   );
 }
 
@@ -373,6 +399,10 @@ export class FileEventJournal implements EventJournal {
   private readonly lockTimeoutMs: number;
   private readonly lockRetryMs: number;
   private readonly staleLockMs: number;
+  private readonly maxEventBatchSize: number;
+  private readonly maxSerializedAppendBytes: number;
+  private readonly maxJournalBytes: number;
+  private readonly maxLockMetadataBytes: number;
   private readonly faultInjector: PersistenceFaultInjector;
   private readonly now: () => Date;
   private readonly queues = new Map<string, Promise<void>>();
@@ -385,9 +415,24 @@ export class FileEventJournal implements EventJournal {
     this.lockTimeoutMs = options.lockTimeoutMs ?? 5_000;
     this.lockRetryMs = options.lockRetryMs ?? 25;
     this.staleLockMs = options.staleLockMs ?? 30_000;
+    this.maxEventBatchSize = options.maxEventBatchSize ?? 10_000;
+    this.maxSerializedAppendBytes =
+      options.maxSerializedAppendBytes ?? 64 * 1024 * 1024;
+    this.maxJournalBytes = options.maxJournalBytes ?? 1024 * 1024 * 1024;
+    this.maxLockMetadataBytes = options.maxLockMetadataBytes ?? 64 * 1024;
     ensureDuration("lockTimeoutMs", this.lockTimeoutMs, 0);
     ensureDuration("lockRetryMs", this.lockRetryMs, 1);
     ensureDuration("staleLockMs", this.staleLockMs, 0);
+    ensurePositiveSafeInteger("maxEventBatchSize", this.maxEventBatchSize);
+    ensurePositiveSafeInteger(
+      "maxSerializedAppendBytes",
+      this.maxSerializedAppendBytes,
+    );
+    ensurePositiveSafeInteger("maxJournalBytes", this.maxJournalBytes);
+    ensurePositiveSafeInteger(
+      "maxLockMetadataBytes",
+      this.maxLockMetadataBytes,
+    );
     this.faultInjector =
       options.faultInjector ?? new NoopPersistenceFaultInjector();
     this.now = options.now ?? (() => new Date());
@@ -401,6 +446,11 @@ export class FileEventJournal implements EventJournal {
     ensureStreamId(streamId);
     if (events.length === 0) {
       return [];
+    }
+    if (events.length > this.maxEventBatchSize) {
+      throw new Error(
+        `Event batch size ${events.length} exceeds maxEventBatchSize ${this.maxEventBatchSize}.`,
+      );
     }
     return this.enqueue(streamId, async () =>
       this.withStreamLock(streamId, async () => {
@@ -432,8 +482,8 @@ export class FileEventJournal implements EventJournal {
           );
         }
         const recordedAt = options.recordedAt ?? this.now().toISOString();
-        if (!isValidTimestamp(recordedAt)) {
-          throw new Error("Event recording timestamp must be valid.");
+        if (!isCanonicalUtcTimestamp(recordedAt)) {
+          throw new Error("Event recording timestamp must be valid canonical UTC.");
         }
         let previousHash = inspection.validThroughHash;
         let nextSequence = inspection.validThroughSequence + 1;
@@ -482,7 +532,7 @@ export class FileEventJournal implements EventJournal {
           sequence: inspection.validThroughSequence,
         });
         await assertDirectoryOrMissing(this.journalDirectory());
-        await mkdir(this.journalDirectory(), { recursive: true });
+        await mkdir(this.journalDirectory(), { recursive: true, mode: 0o700 });
         await assertDirectoryOrMissing(this.journalDirectory());
         const path = this.journalPath(streamId);
         await assertRegularFileOrMissing(path);
@@ -495,7 +545,18 @@ export class FileEventJournal implements EventJournal {
           recordSeparator +
           persisted.map((event) => canonicalJsonStringify(event)).join("\n") +
           "\n";
-        const handle = await open(path, "a");
+        const appendByteLength = Buffer.byteLength(payload, "utf8");
+        if (appendByteLength > this.maxSerializedAppendBytes) {
+          throw new Error(
+            `Serialized append size ${appendByteLength} exceeds maxSerializedAppendBytes ${this.maxSerializedAppendBytes}.`,
+          );
+        }
+        if (inspection.totalByteLength + appendByteLength > this.maxJournalBytes) {
+          throw new Error(
+            `Journal size would exceed maxJournalBytes ${this.maxJournalBytes}.`,
+          );
+        }
+        const handle = await open(path, "a", 0o600);
         try {
           await this.faultInjector.trigger({
             point: "journal.before_append",
@@ -563,6 +624,12 @@ export class FileEventJournal implements EventJournal {
     await assertRegularFileOrMissing(path);
     let buffer = Buffer.alloc(0);
     try {
+      const details = await lstat(path);
+      if (details.size > this.maxJournalBytes) {
+        throw new Error(
+          `Journal size ${details.size} exceeds maxJournalBytes ${this.maxJournalBytes}.`,
+        );
+      }
       buffer = await readFile(path);
     } catch (error) {
       if (asErrorCode(error) !== "ENOENT") {
@@ -747,6 +814,17 @@ export class FileEventJournal implements EventJournal {
         reason: "Lock path is not a regular file.",
       };
     }
+    if (details.size > this.maxLockMetadataBytes) {
+      return {
+        streamId,
+        path,
+        status: "invalid",
+        metadata: null,
+        ageMs: Math.max(0, this.now().getTime() - details.mtimeMs),
+        ownerAlive: null,
+        reason: `Lock metadata exceeds maxLockMetadataBytes ${this.maxLockMetadataBytes}.`,
+      };
+    }
     let metadata: PersistenceLockMetadata | null = null;
     try {
       const parsed: unknown = JSON.parse(await readFile(path, "utf8"));
@@ -852,30 +930,24 @@ export class FileEventJournal implements EventJournal {
     ) {
       throw new Error("Lock owner changed after inspection; recovery was aborted.");
     }
-    const latest = await this.inspectLock(streamId);
-    if (
-      latest.status === "active" ||
-      latest.metadata?.ownerId !== inspection.metadata?.ownerId
-    ) {
-      throw new Error("Lock changed during recovery; no file was removed.");
+    const ownerId = inspection.metadata?.ownerId;
+    if (ownerId === undefined) {
+      throw new Error(
+        `Refusing to recover lock for stream "${streamId}" because ownership cannot be established.`,
+      );
     }
-    let removed = false;
-    try {
-      await unlink(this.lockPath(streamId));
-      removed = true;
-    } catch (error) {
-      if (asErrorCode(error) !== "ENOENT") {
-        throw error;
-      }
-    }
-    if (removed) {
-      await syncDirectory(this.journalDirectory());
-    }
+    const removed = await this.removeOwnedLockAtomically(
+      streamId,
+      ownerId,
+      "recovery",
+    );
     return {
       streamId,
-      recovered: true,
+      recovered: removed,
       previousStatus: inspection.status,
-      reason: inspection.reason,
+      reason: removed
+        ? inspection.reason
+        : "The inspected lock disappeared before recovery could claim it.",
     };
   }
 
@@ -918,7 +990,7 @@ export class FileEventJournal implements EventJournal {
     operation: () => Promise<T>,
   ): Promise<T> {
     await assertDirectoryOrMissing(this.journalDirectory());
-    await mkdir(this.journalDirectory(), { recursive: true });
+    await mkdir(this.journalDirectory(), { recursive: true, mode: 0o700 });
     await assertDirectoryOrMissing(this.journalDirectory());
     const path = this.lockPath(streamId);
     const ownerId = randomUUID();
@@ -943,6 +1015,7 @@ export class FileEventJournal implements EventJournal {
         const handle = await open(
           path,
           constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
+          0o600,
         );
         try {
           await handle.writeFile(`${canonicalJsonStringify(metadata)}\n`, "utf8");
@@ -1031,16 +1104,171 @@ export class FileEventJournal implements EventJournal {
     streamId: string,
     ownerId: string,
   ): Promise<void> {
-    const inspection = await this.inspectLock(streamId);
-    if (inspection.status === "absent") {
-      return;
+    await this.removeOwnedLockAtomically(streamId, ownerId, "release");
+  }
+
+  /**
+   * Claims the current lock through an atomic rename before deleting it.
+   *
+   * A plain inspect-then-unlink sequence can delete a successor lock when the
+   * path is replaced between those operations. Windows can also reject unlink
+   * transiently while another process is reading the lock. The claim path
+   * closes both gaps: the exact inode-like entry is moved aside, its owner is
+   * verified again, and transient sharing violations are retried with bounded
+   * backoff. A mismatched claimed lock is restored or preserved for operator
+   * inspection; it is never deleted.
+   */
+  private async removeOwnedLockAtomically(
+    streamId: string,
+    ownerId: string,
+    action: "release" | "recovery",
+  ): Promise<boolean> {
+    const lockPath = this.lockPath(streamId);
+    const claimedPath = `${lockPath}.claimed-${process.pid}-${randomUUID()}`;
+    let claimed = false;
+
+    for (let attempt = 0; attempt < LOCK_FILESYSTEM_RETRY_LIMIT; attempt += 1) {
+      const inspection = await this.inspectLock(streamId);
+      if (inspection.status === "absent") {
+        return false;
+      }
+      if (inspection.metadata?.ownerId !== ownerId) {
+        throw new Error(
+          `Refusing lock ${action} for stream "${streamId}" because ownership changed.`,
+        );
+      }
+
+      try {
+        await this.faultInjector.trigger({
+          point: "journal.before_lock_claim",
+          streamId,
+          path: lockPath,
+          metadata: { action, ownerId, claimedPath },
+        });
+        await rename(lockPath, claimedPath);
+        claimed = true;
+        break;
+      } catch (error) {
+        const code = asErrorCode(error);
+        if (code === "ENOENT") {
+          continue;
+        }
+        if (
+          isRetryableLockFilesystemError(error) &&
+          attempt + 1 < LOCK_FILESYSTEM_RETRY_LIMIT
+        ) {
+          await delay(Math.min(250, this.lockRetryMs * (attempt + 1)));
+          continue;
+        }
+        throw error;
+      }
     }
-    if (inspection.metadata?.ownerId !== ownerId) {
+
+    if (!claimed) {
       throw new Error(
-        `Refusing to remove lock for stream "${streamId}" because ownership changed.`,
+        `Unable to atomically claim lock for stream "${streamId}" during ${action}.`,
       );
     }
-    await unlink(this.lockPath(streamId));
-    await syncDirectory(this.journalDirectory());
+
+    try {
+      await this.faultInjector.trigger({
+        point: "journal.after_lock_claim",
+        streamId,
+        path: lockPath,
+        metadata: { action, ownerId, claimedPath },
+      });
+    } catch (error) {
+      try {
+        await link(claimedPath, lockPath);
+        await unlink(claimedPath);
+      } catch (restoreError) {
+        throw new AggregateError(
+          [error, restoreError],
+          `A fault occurred after claiming the lock for stream "${streamId}" and the claimed entry could not be restored without overwriting another owner. It remains preserved at ${claimedPath}.`,
+        );
+      }
+      throw error;
+    }
+
+    let claimedMetadata: PersistenceLockMetadata | null = null;
+    try {
+      const parsed: unknown = JSON.parse(await readFile(claimedPath, "utf8"));
+      if (isLockMetadata(parsed)) {
+        claimedMetadata = parsed;
+      }
+    } catch {
+      // Handled as an ownership mismatch below.
+    }
+
+    if (claimedMetadata?.ownerId !== ownerId) {
+      let restored = false;
+      try {
+        await link(claimedPath, lockPath);
+        await unlink(claimedPath);
+        restored = true;
+      } catch (restoreError) {
+        if (asErrorCode(restoreError) !== "EEXIST") {
+          throw new AggregateError(
+            [restoreError],
+            `Claimed lock ownership changed for stream "${streamId}" and the mismatched lock could not be restored. It remains preserved at ${claimedPath}.`,
+          );
+        }
+      }
+      throw new Error(
+        restored
+          ? `Lock changed during ${action} for stream "${streamId}"; the replacement lock was restored and no lock was deleted.`
+          : `Lock changed during ${action} for stream "${streamId}"; another lock already occupies the path and the mismatched lock remains preserved at ${claimedPath}.`,
+      );
+    }
+
+    for (let attempt = 0; attempt < LOCK_FILESYSTEM_RETRY_LIMIT; attempt += 1) {
+      try {
+        await this.faultInjector.trigger({
+          point: "journal.before_lock_delete",
+          streamId,
+          path: lockPath,
+          metadata: { action, ownerId, claimedPath },
+        });
+        await unlink(claimedPath);
+      } catch (error) {
+        if (asErrorCode(error) === "ENOENT") {
+          await syncDirectory(this.journalDirectory());
+          return true;
+        }
+        if (
+          isRetryableLockFilesystemError(error) &&
+          attempt + 1 < LOCK_FILESYSTEM_RETRY_LIMIT
+        ) {
+          await delay(Math.min(250, this.lockRetryMs * (attempt + 1)));
+          continue;
+        }
+
+        try {
+          await link(claimedPath, lockPath);
+          await unlink(claimedPath);
+        } catch (restoreError) {
+          throw new AggregateError(
+            [error, restoreError],
+            `Lock ${action} failed for stream "${streamId}" and the claimed lock could not be restored without overwriting another owner. It may remain at ${claimedPath}.`,
+          );
+        }
+        throw new Error(
+          `Lock ${action} failed for stream "${streamId}" after atomic claim; the owned lock was restored: ${errorDescription(error)}`,
+        );
+      }
+
+      await syncDirectory(this.journalDirectory());
+      await this.faultInjector.trigger({
+        point: "journal.after_lock_delete",
+        streamId,
+        path: lockPath,
+        metadata: { action, ownerId, claimedPath },
+      });
+      return true;
+    }
+
+    throw new Error(
+      `Lock ${action} retries were exhausted for stream "${streamId}".`,
+    );
   }
 }

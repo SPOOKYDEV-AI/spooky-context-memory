@@ -1,5 +1,46 @@
 import { FileEventJournal } from "../../dist/index.js";
 
+function serializeError(error) {
+  const messages = [];
+  const codes = [];
+  const seen = new Set();
+
+  function visit(value) {
+    if (value !== null && typeof value === "object") {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+
+    if (value instanceof Error) {
+      messages.push(value.message);
+      if ("code" in value && typeof value.code === "string") {
+        codes.push(value.code);
+      }
+      if (value instanceof AggregateError) {
+        for (const nested of value.errors) {
+          visit(nested);
+        }
+      }
+      if ("cause" in value && value.cause !== undefined) {
+        visit(value.cause);
+      }
+      return;
+    }
+
+    messages.push(String(value));
+  }
+
+  visit(error);
+  return {
+    error: messages.join(" | "),
+    errorName: error instanceof Error ? error.name : typeof error,
+    errorMessages: [...new Set(messages)],
+    errorCodes: [...new Set(codes)],
+  };
+}
+
 const [rootDirectory, streamId, writerId] = process.argv.slice(2);
 if (!rootDirectory || !streamId || !writerId) {
   process.stdout.write(
@@ -37,7 +78,7 @@ if (!rootDirectory || !streamId || !writerId) {
       `${JSON.stringify({
         success: false,
         writerId,
-        error: error instanceof Error ? error.message : String(error),
+        ...serializeError(error),
       })}\n`,
     );
   }

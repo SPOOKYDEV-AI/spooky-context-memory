@@ -93,6 +93,7 @@ export * from "./unlearning/adaptive-unlearning-engine.js";
 export * from "./orchestration/adaptive-memory-evolution-cycle.js";
 export * from "./evaluation/adaptive-memory-metrics.js";
 export * from "./persistence/types.js";
+export * from "./persistence/timestamps.js";
 export * from "./persistence/checksums.js";
 export * from "./persistence/migrations.js";
 export * from "./persistence/file-event-journal.js";

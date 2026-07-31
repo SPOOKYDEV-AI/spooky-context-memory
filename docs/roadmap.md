@@ -69,7 +69,7 @@
 - persistence-health metrics;
 - synthetic recovery and replay tests.
 
-## 0.7.1 — Persistence Reliability Gauntlet — current
+## 0.7.1 — Persistence Reliability Gauntlet — released
 
 - canonical JSON validation and unsafe-value rejection;
 - exact byte-level journal inspection for Unicode and partial writes;
@@ -85,6 +85,19 @@
 - one-million-case daily generated-property campaign;
 - Windows and Linux CI across Node.js 20, 22, and 24;
 - permanent synthetic regression corpus.
+
+## 0.7.2 — Post-Release Adversarial Hardening — current
+
+- atomic claim-before-delete lock retirement;
+- bounded retries for transient Windows lock sharing violations;
+- successor-lock preservation during release and orphan recovery;
+- nested concurrent-worker error diagnostics;
+- repeated multi-process lock races in standard and scheduled CI;
+- canonical UTC millisecond timestamps for durable metadata;
+- bounded canonical JSON depth, nodes, collections, and strings;
+- append, journal, and lock-metadata resource limits;
+- owner-only POSIX defaults for new persistence artifacts;
+- permanent post-release adversarial boundary tests.
 
 Deferred after hardening:
 

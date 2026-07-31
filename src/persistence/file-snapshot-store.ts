@@ -25,6 +25,7 @@ import {
   NoopPersistenceFaultInjector,
   type PersistenceFaultInjector,
 } from "./fault-injection.js";
+import { isCanonicalUtcTimestamp } from "./timestamps.js";
 import type {
   MemorySnapshot,
   SaveSnapshotInput,
@@ -197,7 +198,7 @@ function isMemorySnapshotEnvelope(value: unknown): value is MemorySnapshot {
     typeof snapshot.snapshotHash === "string" &&
     /^[a-f0-9]{64}$/u.test(snapshot.snapshotHash) &&
     typeof snapshot.createdAt === "string" &&
-    Number.isFinite(Date.parse(snapshot.createdAt)) &&
+    isCanonicalUtcTimestamp(snapshot.createdAt) &&
     snapshot.snapshotId ===
       expectedSnapshotId(snapshot as {
         streamId: string;
@@ -238,8 +239,8 @@ export class FileSnapshotStore implements SnapshotStore {
       throw new Error("Snapshot schema version must be a positive integer.");
     }
     const createdAt = input.createdAt ?? this.now().toISOString();
-    if (typeof createdAt !== "string" || !Number.isFinite(Date.parse(createdAt))) {
-      throw new Error("Snapshot creation timestamp must be valid.");
+    if (!isCanonicalUtcTimestamp(createdAt)) {
+      throw new Error("Snapshot creation timestamp must be valid canonical UTC.");
     }
     if (
       typeof input.eventHash !== "string" ||
@@ -272,7 +273,7 @@ export class FileSnapshotStore implements SnapshotStore {
       snapshotHash: computeSnapshotHash(withoutHash),
     };
     await assertDirectoryOrMissing(this.snapshotDirectory());
-    await mkdir(this.snapshotDirectory(), { recursive: true });
+    await mkdir(this.snapshotDirectory(), { recursive: true, mode: 0o700 });
     await assertDirectoryOrMissing(this.snapshotDirectory());
     const finalPath = this.snapshotPath(input.streamId, input.sequence);
     await assertRegularFileOrMissing(finalPath);
@@ -311,7 +312,7 @@ export class FileSnapshotStore implements SnapshotStore {
       path: temporaryPath,
       sequence: input.sequence,
     });
-    const handle = await open(temporaryPath, "wx");
+    const handle = await open(temporaryPath, "wx", 0o600);
     let renamed = false;
     try {
       await handle.writeFile(`${canonicalJsonStringify(snapshot)}\n`, "utf8");

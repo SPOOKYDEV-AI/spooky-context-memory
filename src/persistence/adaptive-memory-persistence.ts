@@ -4,6 +4,7 @@ import { normalizeCanonicalJson } from "./canonical-json.js";
 import { GENESIS_EVENT_HASH } from "./checksums.js";
 import { PersistenceMigrationRegistry } from "./migrations.js";
 import { replayMemoryStream } from "./replay.js";
+import { isCanonicalUtcTimestamp } from "./timestamps.js";
 import type {
   AdaptiveMemoryDomainEvent,
   AdaptiveMemoryDurableState,
@@ -111,7 +112,7 @@ export function validateAdaptiveMemoryDurableState(
   }
   if (
     typeof state.updatedAt !== "string" ||
-    !Number.isFinite(Date.parse(state.updatedAt))
+    !isCanonicalUtcTimestamp(state.updatedAt)
   ) {
     throw new Error("Durable state updatedAt must be a valid timestamp.");
   }
