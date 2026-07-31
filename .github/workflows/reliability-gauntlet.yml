@@ -89,6 +89,8 @@ jobs:
         env:
           SPOOKY_MODEL_SCENARIOS: ${{ inputs.model_scenarios || '100' }}
           SPOOKY_MODEL_STEPS: "40"
+          SPOOKY_MODEL_TIMEOUT_MS: "300000"
+          SPOOKY_MODEL_CLEANUP_TIMEOUT_MS: "120000"
           SPOOKY_GAUNTLET_SHARD: "1"
         run: >-
           npx vitest run
