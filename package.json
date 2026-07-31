@@ -1,7 +1,7 @@
 {
   "name": "@spooky-ai/context-memory",
   "version": "0.6.0",
-  "description": "Scope-aware experiential memory with global coherence, reflective learning, and adaptive unlearning for reliable AI agents.",
+  "description": "Scope-aware experiential memory with global coherence, reflective learning, adaptive unlearning, and deterministic persistence for reliable AI agents.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -55,7 +55,12 @@
     "adaptive-unlearning",
     "cognitive-habits",
     "counterfactual-views",
-    "memory-homeostasis"
+    "memory-homeostasis",
+    "event-sourcing",
+    "deterministic-replay",
+    "append-only-journal",
+    "memory-snapshots",
+    "crash-recovery"
   ],
   "author": "François Bove",
   "license": "MIT",

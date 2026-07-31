@@ -1,6 +1,6 @@
 # Spooky Context Memory
 
-**Scope-aware experiential memory with global coherence, reflective learning, and adaptive unlearning for reliable AI agents.**
+**Scope-aware experiential memory with global coherence, reflective learning, adaptive unlearning, and deterministic persistence for reliable AI agents.**
 
 Spooky Context Memory is a TypeScript library for agents that must learn from accepted and rejected outcomes without turning every past event into a universal rule or carrying an entire conversation forever.
 
@@ -37,6 +37,9 @@ The engine combines:
 - self-bias detection for confirmation, inertia, contradiction neglect, and outcome-cause conflation;
 - **Adaptive Unlearning** that inhibits, narrows, weakens, quarantines, or supersedes habits without deleting history;
 - counterfactual Views, relearning plans, and explicit recovery conditions;
+- append-only, hash-chained persistence journals with optimistic concurrency;
+- atomic snapshots, schema migrations, deterministic replay, and explicit crash recovery;
+- logical compaction that reduces replay cost without deleting journal history;
 - selective memory reconstruction and compact preventive preflight context.
 
 ## Core idea
@@ -70,12 +73,41 @@ Reflective learning and adaptive unlearning
     ↓
 Global-understanding revision gate
     ↓
+Append-only event journal and verified snapshot
+    ↓
+Deterministic replay and durable reconstruction
+    ↓
 Vision-guided selective reconstruction
 ```
 
 The initial context must survive long enough to orient exploration, implementation, and validation. It leaves the active working set only when its useful value has been transferred into persistent, traceable structures.
 
 > No eviction without proof of transfer.
+
+
+## Persistent adaptive memory
+
+v0.7 adds a durable event-sourced boundary around the cognitive engine.
+
+```text
+Adaptive memory decision
+    ↓
+Hash-chained JSONL event
+    ↓
+Deterministic reducer
+    ↓
+Durable state projection
+    ↓
+Atomic verified snapshot
+    ↓
+Bounded replay after restart
+```
+
+The event journal is the historical source. Snapshots accelerate replay but never replace or rewrite history. Every event carries a contiguous sequence, payload hash, previous-event hash, full event hash, schema version, timestamps, and optional context, correlation, causation, actor, and classification metadata.
+
+`FileEventJournal` provides a Node.js 20-compatible reference adapter without runtime dependencies. `FileSnapshotStore` provides atomic checksummed snapshots. `PersistenceMigrationRegistry` performs deterministic read-time migrations without changing stored hashes. `PersistentAdaptiveMemory` persists durable projections from the adaptive evolution cycle while temporary Views and search frontiers remain non-authoritative by default.
+
+Recovery is explicit. A partial trailing write may be truncated only after inspection identifies the last valid byte. Middle-of-stream corruption is never silently repaired.
 
 ## Context as a viscous flow
 

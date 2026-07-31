@@ -1,0 +1,20 @@
+{
+  "id": "deterministic-replay-recovery",
+  "description": "Synthetic append, snapshot, replay, corruption detection, and trailing recovery scenario.",
+  "streamId": "synthetic-project-atlas",
+  "schemaVersion": 1,
+  "eventCount": 6,
+  "snapshotSequence": 4,
+  "expectedReplayCount": 2,
+  "corruption": {
+    "kind": "partial_trailing_record",
+    "automaticRecoveryAllowed": false,
+    "explicitTrailingTruncationAllowed": true
+  },
+  "expected": {
+    "journalIntegrityBeforeCorruption": true,
+    "corruptionDetected": true,
+    "stateHashStableAcrossTwoReplays": true,
+    "physicalEventDeletion": false
+  }
+}
