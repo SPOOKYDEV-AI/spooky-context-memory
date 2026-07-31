@@ -37,7 +37,31 @@ interface ConcurrentWriterResult {
   writerId: string;
   sequence?: number | null;
   error?: string;
+  errorName?: string;
+  errorMessages?: string[];
+  errorCodes?: string[];
 }
+
+function environmentPositiveInteger(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined) {
+    return fallback;
+  }
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error(`${name} must be a positive safe integer.`);
+  }
+  return parsed;
+}
+
+const lockRaceRounds = environmentPositiveInteger(
+  "SPOOKY_LOCK_RACE_ROUNDS",
+  1,
+);
+const lockRaceTimeoutMs = environmentPositiveInteger(
+  "SPOOKY_LOCK_RACE_TIMEOUT_MS",
+  Math.max(60_000, lockRaceRounds * 20_000),
+);
 
 function runConcurrentWriter(
   directory: string,
@@ -201,6 +225,136 @@ describe("lock ownership and fault injection gauntlet", () => {
     await unlink(lockPath);
   });
 
+  it("retries transient lock deletion failures and preserves an atomic successor", async () => {
+    const directory = await root();
+    let transientDeleteInjected = false;
+    let successorInstalled = false;
+    const successor: PersistenceLockMetadata = {
+      formatVersion: 1,
+      streamId: "atlas",
+      ownerId: "successor-owner",
+      pid: process.pid,
+      hostname: "synthetic-successor-host",
+      createdAt: "2026-07-31T00:00:01.000Z",
+      heartbeatAt: "2026-07-31T00:00:01.000Z",
+    };
+    const injector: PersistenceFaultInjector = {
+      async trigger(context: PersistenceFaultContext) {
+        if (
+          context.point === "journal.after_lock_claim" &&
+          context.path !== undefined &&
+          context.metadata?.action === "release" &&
+          !successorInstalled
+        ) {
+          successorInstalled = true;
+          await writeFile(
+            context.path,
+            `${canonicalJsonStringify(successor)}\n`,
+            { encoding: "utf8", flag: "wx" },
+          );
+        }
+        if (
+          context.point === "journal.before_lock_delete" &&
+          context.metadata?.action === "release" &&
+          !transientDeleteInjected
+        ) {
+          transientDeleteInjected = true;
+          throw Object.assign(new Error("synthetic Windows sharing violation"), {
+            code: "EPERM",
+          });
+        }
+      },
+    };
+    const journal = new FileEventJournal({
+      rootDirectory: directory,
+      lockRetryMs: 1,
+      faultInjector: injector,
+    });
+
+    await journal.append("atlas", [
+      {
+        type: "counter.added",
+        payload: { amount: 1 },
+        schemaVersion: 1,
+        occurredAt: "2026-07-31T00:00:00.000Z",
+      },
+    ]);
+
+    expect(transientDeleteInjected).toBe(true);
+    expect(successorInstalled).toBe(true);
+    expect((await journal.inspect("atlas")).validThroughSequence).toBe(1);
+    const persistedSuccessor = JSON.parse(
+      await readFile(journal.lockPath("atlas"), "utf8"),
+    ) as { ownerId: string };
+    expect(persistedSuccessor.ownerId).toBe("successor-owner");
+    await unlink(journal.lockPath("atlas"));
+  });
+
+  it("restores a replacement lock captured during orphan recovery", async () => {
+    const directory = await root();
+    const original: PersistenceLockMetadata = {
+      formatVersion: 1,
+      streamId: "atlas",
+      ownerId: "dead-owner",
+      pid: 2_000_000_000,
+      hostname: hostname(),
+      createdAt: "2020-01-01T00:00:00.000Z",
+      heartbeatAt: "2020-01-01T00:00:00.000Z",
+    };
+    const replacement: PersistenceLockMetadata = {
+      formatVersion: 1,
+      streamId: "atlas",
+      ownerId: "replacement-owner",
+      pid: process.pid,
+      hostname: hostname(),
+      createdAt: "2026-07-31T00:00:00.000Z",
+      heartbeatAt: "2026-07-31T00:00:00.000Z",
+    };
+    let replaced = false;
+    const injector: PersistenceFaultInjector = {
+      async trigger(context: PersistenceFaultContext) {
+        if (
+          context.point === "journal.before_lock_claim" &&
+          context.path !== undefined &&
+          context.metadata?.action === "recovery" &&
+          !replaced
+        ) {
+          replaced = true;
+          await writeFile(
+            context.path,
+            `${canonicalJsonStringify(replacement)}\n`,
+            "utf8",
+          );
+        }
+      },
+    };
+    const journal = new FileEventJournal({
+      rootDirectory: directory,
+      staleLockMs: 0,
+      faultInjector: injector,
+    });
+    await mkdir(join(directory, "journals"), { recursive: true });
+    await writeFile(
+      journal.lockPath("atlas"),
+      `${canonicalJsonStringify(original)}\n`,
+      "utf8",
+    );
+
+    await expect(
+      journal.recoverOrphanedLock("atlas", {
+        confirm: true,
+        expectedOwnerId: "dead-owner",
+      }),
+    ).rejects.toThrow("Lock changed during recovery");
+
+    expect(replaced).toBe(true);
+    const persistedReplacement = JSON.parse(
+      await readFile(journal.lockPath("atlas"), "utf8"),
+    ) as { ownerId: string };
+    expect(persistedReplacement.ownerId).toBe("replacement-owner");
+    await unlink(journal.lockPath("atlas"));
+  });
+
   it("makes a post-append crash observable without allowing a duplicate retry", async () => {
     const directory = await root();
     const crashing = new FileEventJournal({
@@ -241,28 +395,49 @@ describe("lock ownership and fault injection gauntlet", () => {
       ),
     ).rejects.toThrow("Optimistic concurrency conflict");
 
-    const raceDirectory = await root();
-    const raceResults = await Promise.all(
-      Array.from({ length: 8 }, (_, index) =>
-        runConcurrentWriter(raceDirectory, "race", `writer-${index}`),
-      ),
-    );
-    expect(raceResults.filter((result) => result.success)).toHaveLength(1);
-    expect(
-      raceResults
-        .filter((result) => !result.success)
-        .every((result) =>
-          result.error?.includes("Optimistic concurrency conflict"),
+    for (let round = 0; round < lockRaceRounds; round += 1) {
+      const raceDirectory = await root();
+      const raceResults = await Promise.all(
+        Array.from({ length: 8 }, (_, index) =>
+          runConcurrentWriter(
+            raceDirectory,
+            "race",
+            `round-${round}-writer-${index}`,
+          ),
         ),
-    ).toBe(true);
-    expect(
-      (
-        await new FileEventJournal({ rootDirectory: raceDirectory }).inspect(
-          "race",
-        )
-      ).validThroughSequence,
-    ).toBe(1);
-  });
+      );
+      const winners = raceResults.filter((result) => result.success);
+      const losers = raceResults.filter((result) => !result.success);
+      const unexpectedLosers = losers.filter(
+        (result) =>
+          result.errorName === "AggregateError" ||
+          !(result.errorMessages ?? [result.error ?? ""]).some((message) =>
+            message.includes("Optimistic concurrency conflict"),
+          ),
+      );
+      expect(
+        winners,
+        `Concurrent writer results for round ${round}: ${JSON.stringify(raceResults, null, 2)}`,
+      ).toHaveLength(1);
+      expect(
+        losers,
+        `Concurrent writer results for round ${round}: ${JSON.stringify(raceResults, null, 2)}`,
+      ).toHaveLength(7);
+      expect(
+        unexpectedLosers,
+        `Unexpected concurrent writer failures for round ${round}: ${JSON.stringify(raceResults, null, 2)}`,
+      ).toEqual([]);
+      const raceInspection = await new FileEventJournal({
+        rootDirectory: raceDirectory,
+      }).inspect("race");
+      expect(raceInspection.issue).toBeNull();
+      expect(raceInspection.validThroughSequence).toBe(1);
+      expect(raceInspection.events).toHaveLength(1);
+      expect(raceInspection.events[0]?.payload).toEqual({
+        writerId: winners[0]?.writerId,
+      });
+    }
+  }, lockRaceTimeoutMs);
 
   it("classifies a partial unicode tail using exact byte offsets", async () => {
     const directory = await root();

@@ -27,6 +27,7 @@ import {
   NoopPersistenceFaultInjector,
   type PersistenceFaultInjector,
 } from "./fault-injection.js";
+import { isCanonicalUtcTimestamp } from "./timestamps.js";
 import type {
   BackupFileRecord,
   BackupSnapshotRecord,
@@ -90,7 +91,7 @@ async function writeDurableFile(
   path: string,
   data: string | Uint8Array,
 ): Promise<void> {
-  const handle = await open(path, "wx");
+  const handle = await open(path, "wx", 0o600);
   try {
     await handle.writeFile(data);
     await handle.sync();
@@ -317,7 +318,7 @@ function isPersistenceBackupManifest(
     manifest.format === "spooky-context-memory-backup" &&
     manifest.formatVersion === 1 &&
     typeof manifest.createdAt === "string" &&
-    Number.isFinite(Date.parse(manifest.createdAt)) &&
+    isCanonicalUtcTimestamp(manifest.createdAt) &&
     typeof manifest.sourcePackageVersion === "string" &&
     manifest.sourcePackageVersion.trim().length > 0 &&
     Array.isArray(manifest.streams) &&
@@ -336,7 +337,7 @@ async function copyRecordedFile(
     destinationRoot,
     record.relativePath,
   );
-  await mkdir(dirname(destination), { recursive: true });
+  await mkdir(dirname(destination), { recursive: true, mode: 0o700 });
   const bytes = await readRegularFile(source);
   if (bytes.length !== record.byteLength || sha256(bytes) !== record.sha256) {
     throw new Error(
@@ -453,7 +454,7 @@ export async function createPersistenceBackup(
     ? `${options.destinationDirectory}.previous-${randomUUID()}`
     : null;
   await rm(temporaryDirectory, { recursive: true, force: true });
-  await mkdir(temporaryDirectory, { recursive: true });
+  await mkdir(temporaryDirectory, { recursive: true, mode: 0o700 });
   const journal = new FileEventJournal({
     rootDirectory: options.sourceRootDirectory,
   });
@@ -548,10 +549,14 @@ export async function createPersistenceBackup(
     }
 
     await faultInjector.trigger({ point: "backup.before_manifest" });
+    const createdAt = options.createdAt ?? new Date().toISOString();
+    if (!isCanonicalUtcTimestamp(createdAt)) {
+      throw new Error("Backup timestamp must be valid canonical UTC.");
+    }
     const withoutHash: Omit<PersistenceBackupManifest, "manifestHash"> = {
       format: "spooky-context-memory-backup",
       formatVersion: 1,
-      createdAt: options.createdAt ?? new Date().toISOString(),
+      createdAt,
       sourcePackageVersion: options.sourcePackageVersion,
       streams: streamRecords,
     };
@@ -586,7 +591,7 @@ export async function createPersistenceBackup(
 
     await faultInjector.trigger({ point: "backup.before_replace" });
     const destinationParent = dirname(options.destinationDirectory);
-    await mkdir(destinationParent, { recursive: true });
+    await mkdir(destinationParent, { recursive: true, mode: 0o700 });
     await syncDirectory(destinationParent);
     if (destinationExists && previousDirectory !== null) {
       await rename(options.destinationDirectory, previousDirectory);
@@ -886,7 +891,7 @@ export async function restorePersistenceBackup(
     ? `${options.targetRootDirectory}.pre-restore-${randomUUID()}`
     : null;
   await rm(staging, { recursive: true, force: true });
-  await mkdir(staging, { recursive: true });
+  await mkdir(staging, { recursive: true, mode: 0o700 });
 
   try {
     for (const stream of verification.manifest.streams) {
@@ -925,7 +930,7 @@ export async function restorePersistenceBackup(
     await faultInjector.trigger({ point: "restore.after_verify" });
     await faultInjector.trigger({ point: "restore.before_replace" });
     const targetParent = dirname(options.targetRootDirectory);
-    await mkdir(targetParent, { recursive: true });
+    await mkdir(targetParent, { recursive: true, mode: 0o700 });
     await syncDirectory(targetParent);
     if (targetExists && previousDirectory !== null) {
       await rename(options.targetRootDirectory, previousDirectory);

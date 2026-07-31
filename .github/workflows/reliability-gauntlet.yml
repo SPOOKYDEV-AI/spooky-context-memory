@@ -13,6 +13,10 @@ on:
         description: Stateful filesystem scenarios per platform job
         required: false
         default: "100"
+      lock_race_rounds:
+        description: Eight-process same-stream lock races per platform job
+        required: false
+        default: "100"
 
 permissions:
   contents: read
@@ -92,9 +96,12 @@ jobs:
           SPOOKY_MODEL_TIMEOUT_MS: "300000"
           SPOOKY_MODEL_CLEANUP_TIMEOUT_MS: "120000"
           SPOOKY_GAUNTLET_SHARD: "1"
+          SPOOKY_LOCK_RACE_ROUNDS: ${{ inputs.lock_race_rounds || '100' }}
+          SPOOKY_LOCK_RACE_TIMEOUT_MS: "900000"
         run: >-
           npx vitest run
           tests/persistence-model-gauntlet.test.ts
+          tests/persistence-adversarial-boundary.test.ts
           tests/persistence-lock-fault-gauntlet.test.ts
           tests/persistence-snapshot-backup-gauntlet.test.ts
           tests/persistence-health-report.test.ts

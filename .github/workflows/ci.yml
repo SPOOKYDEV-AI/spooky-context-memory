@@ -16,6 +16,8 @@ jobs:
     env:
       SPOOKY_MODEL_TIMEOUT_MS: "120000"
       SPOOKY_MODEL_CLEANUP_TIMEOUT_MS: "120000"
+      SPOOKY_LOCK_RACE_ROUNDS: "5"
+      SPOOKY_LOCK_RACE_TIMEOUT_MS: "180000"
 
     strategy:
       fail-fast: false

@@ -547,10 +547,15 @@ src/
 46. Deterministic replay divergence makes the stream unsafe to write.
 47. Hashes provide integrity evidence, not authenticity or proof against coordinated history rewriting.
 48. Every generated failure must remain reproducible from its seed and minimized corpus case.
+49. Lock removal claims and re-verifies the exact filesystem entry before deletion.
+50. Transient filesystem sharing violations are retried without weakening ownership checks.
+51. Persisted timestamps use one canonical UTC millisecond representation.
+52. Persistence normalization and journal operations enforce explicit resource boundaries.
+53. New private persistence artifacts request owner-only POSIX permissions.
 
 ## Status
 
-`v0.7.0` is released with Persistent Adaptive Memory and Deterministic Replay. The current functional milestone is v0.7.1 Persistence Reliability Gauntlet: cross-platform hardening, fault injection, lock recovery, verified backup and restore, operational CLI tooling, and million-case generated campaigns. The package version remains `0.7.0` until a dedicated release PR.
+`v0.7.1` is released with the Persistence Reliability Gauntlet. The current functional milestone is post-release adversarial hardening for a future v0.7.2 maintenance release: atomic lock retirement, Windows sharing-violation retries, nested concurrent-worker diagnostics, canonical timestamps, bounded persistence inputs, and private POSIX file modes. The package version remains `0.7.1` until a dedicated release PR.
 
 See:
 
@@ -562,6 +567,7 @@ See:
 - [`docs/memory-v0.7-specification.md`](docs/memory-v0.7-specification.md)
 - [`docs/reliability-gauntlet.md`](docs/reliability-gauntlet.md)
 - [`docs/operational-recovery.md`](docs/operational-recovery.md)
+- [`docs/post-release-adversarial-hardening.md`](docs/post-release-adversarial-hardening.md)
 - [`docs/global-understanding.md`](docs/global-understanding.md)
 - [`docs/reflective-learning.md`](docs/reflective-learning.md)
 - [`docs/adaptive-unlearning.md`](docs/adaptive-unlearning.md)
